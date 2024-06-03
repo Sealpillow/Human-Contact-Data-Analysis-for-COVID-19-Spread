@@ -1,6 +1,32 @@
 # Epidemic-Spread-Simulation
 Understanding Models and simulate it
 
+Based on the document on https://www.nature.com/articles/s41598-023-32542-3
+
+### Summary:
+
+The document titled "Identify hidden spreaders of pandemic over contact tracing networks" focuses on identifying asymptomatic and presymptomatic spreaders of COVID-19 using contact tracing networks. Here is a summary of the key points:
+
+1. **Context and Challenge**:
+   - COVID-19's spread is complicated by asymptomatic and presymptomatic individuals who unknowingly transmit the virus.
+   - Current detection methods are resource-intensive and often inefficient.
+
+2. **Proposed Method**:
+   - A theoretical framework is introduced, leveraging transition probabilities among different infectious states in a contact network.
+   - This method uses a Markovian process to estimate the probability of each node (individual) being infected, based on known infected cases and network topology.
+
+3. **Key Findings**:
+   - The framework can identify hidden spreaders with high accuracy, even with incomplete contact tracing data.
+   - Empirical validation using data from Singapore shows that the method outperforms several machine learning baselines and random screening approaches.
+   - The model remains effective even with partial information, making it suitable for real-world applications where data may be incomplete.
+
+4. **Practical Implications**:
+   - This method allows for targeted screening and more efficient isolation of high-risk individuals, potentially improving intervention strategies.
+   - It can be applied to any contact tracing network, whether manually constructed or using technological means like Bluetooth or GPS-based systems.
+
+In conclusion, the study presents an efficient and accurate method for identifying asymptomatic and presymptomatic COVID-19 spreaders, which could significantly enhance public health responses to the pandemic.
+
+
 The model described in the document and the traditional SIR (Susceptible-Infectious-Recovered) model both aim to describe the spread of infectious diseases, but there are significant differences between them in terms of complexity, realism, and application. Here are the key differences:
 
 ### SIR Model
