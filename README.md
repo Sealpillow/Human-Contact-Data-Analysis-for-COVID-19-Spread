@@ -36,62 +36,132 @@ The challenge with both presymptomatic and asymptomatic cases lies in their pote
 In summary, while presymptomatic individuals have been infected but not yet shown symptoms, asymptomatic individuals never display symptoms despite being carriers of the disease. Both play significant roles in the transmission dynamics of infectious diseases, underscoring the importance of testing, contact tracing, and preventive measures to curb their spread.
 
 
-The model described in the document and the traditional SIR (Susceptible-Infectious-Recovered) model both aim to describe the spread of infectious diseases, but there are significant differences between them in terms of complexity, realism, and application. Here are the key differences:
+### SEPAIR States
+- **S**: Susceptible
+- **E**: Exposed (infected but not yet infectious)
+- **P**: Presymptomatic (infectious but not yet showing symptoms)
+- **A**: Asymptomatic (infectious but not showing symptoms)
+- **I**: Infected (symptomatic and infectious)
+- **R**: Recovered
 
-### SIR Model
+### Transition Rules
+1. **S → E**: Susceptible individuals become exposed after contact with infectious individuals.
+2. **E → P**: Exposed individuals become presymptomatic after the incubation period.
+3. **P → A**: Presymptomatic individuals become asymptomatic.
+4. **P → I**: Presymptomatic individuals become symptomatic.
+5. **A → R**: Asymptomatic individuals recover.
+6. **I → R**: Symptomatic individuals recover.
 
-1. **Compartments**:
-   - **Susceptible (S):** Individuals who can contract the disease.
-   - **Infectious (I):** Individuals who have contracted the disease and can transmit it to others.
-   - **Recovered (R):** Individuals who have recovered from the disease and are assumed to be immune.
+### Transition Probabilities
+- S[] : Probability that a susceptible person becomes exposed after contact with an infectious individual.
+- E[]: Probability that an exposed person becomes presymptomatic.
+- P[]: Probability that a presymptomatic person becomes asymptomatic.
+- P[]: Probability that a presymptomatic person becomes symptomatic.
+- A[]: Probability that an asymptomatic person recovers.
+- S[]: Probability that a symptomatic person recovers.
 
-2. **Transition Dynamics**:
-   - Individuals move from S to I based on the infection rate.
-   - Individuals move from I to R based on the recovery rate.
+### Implementation
 
-3. **Assumptions**:
-   - Homogeneous mixing: Every individual has an equal probability of coming into contact with any other individual.
-   - Constant rates of infection and recovery.
+Here is the updated Python code that includes the presymptomatic state:
 
-4. **Application**:
-   - Used for basic epidemiological modeling to understand the general dynamics of an epidemic.
-   - Simplified and does not account for variations in contact patterns or asymptomatic transmission.
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+import random
 
-### Extended Model for COVID-19 (Network-based SEIR-like Model)
+# Parameters
+P_SE = 0.3  # Probability that S becomes E after contact with A, P, or I
+P_EP = 0.2  # Probability that E becomes P
+P_PA = 0.1  # Probability that P becomes A
+P_PI = 0.1  # Probability that P becomes I
+P_AR = 0.05  # Probability that A recovers
+P_IR = 0.05  # Probability that I recovers
+days = 100
+grid_size = 50  # 50x50 grid for 2500 individuals
 
-1. **Compartments**:
-   - **Susceptible (S):** Same as in SIR.
-   - **Presymptomatic (P):** Infected individuals who are in the incubation period and can transmit the virus before showing symptoms.
-   - **Symptomatic Infectious (I):** Same as I in SIR but specifically for symptomatic individuals.
-   - **Asymptomatic Infectious (A):** Infected individuals who do not show symptoms but can still transmit the virus.
-   - **Recovered (R):** Same as in SIR.
+# Initialize the grid with majority 'S' and a few 'E'
+grid = np.full((grid_size, grid_size), 'S')
+initial_exposed = [(random.randint(0, grid_size-1), random.randint(0, grid_size-1)) for _ in range(5)]
+for (i, j) in initial_exposed:
+    grid[i, j] = 'E'
 
-2. **Transition Dynamics**:
-   - More complex transitions including S to P or A, P to I, and transitions between infectious states.
-   - Uses a network-based approach to account for individual contact patterns and probabilistic transitions.
+def get_neighbors(x, y, size):
+    neighbors = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
+    return [(i, j) for i, j in neighbors if 0 <= i < size and 0 <= j < size]
 
-3. **Assumptions**:
-   - Network heterogeneity: Individuals have varying probabilities of contact based on network structure.
-   - Includes asymptomatic and presymptomatic states to reflect real-world COVID-19 transmission dynamics.
-   - Probabilistic transitions based on empirical data.
+def update_grid(grid, P_SE, P_EP, P_PA, P_PI, P_AR, P_IR, grid_size):
+    new_grid = grid.copy()
+    for i in range(grid_size):
+        for j in range(grid_size):
+            if grid[i, j] == 'S':
+                infectious_neighbors = sum(1 for ni, nj in get_neighbors(i, j, grid_size) if grid[ni, nj] in ['A', 'P', 'I'])
+                if random.random() < 1 - (1 - P_SE) ** infectious_neighbors:
+                    new_grid[i, j] = 'E'
+            elif grid[i, j] == 'E':
+                if random.random() < P_EP:
+                    new_grid[i, j] = 'P'
+            elif grid[i, j] == 'P':
+                if random.random() < P_PA:
+                    new_grid[i, j] = 'A'
+                elif random.random() < P_PI:
+                    new_grid[i, j] = 'I'
+            elif grid[i, j] == 'A':
+                if random.random() < P_AR:
+                    new_grid[i, j] = 'R'
+            elif grid[i, j] == 'I':
+                if random.random() < P_IR:
+                    new_grid[i, j] = 'R'
+    return new_grid
 
-4. **Application**:
-   - Specifically designed for diseases like COVID-19, where asymptomatic and presymptomatic transmission is significant.
-   - More accurate in real-world scenarios where contact patterns are not homogeneous.
-   - Allows for targeted interventions by identifying high-risk individuals in the contact network.
+# Simulation
+susceptible_counts = []
+exposed_counts = []
+presymptomatic_counts = []
+asymptomatic_counts = []
+infected_counts = []
+recovered_counts = []
 
-### Summary of Key Differences
+for day in range(days):
+    grid = update_grid(grid, P_SE, P_EP, P_PA, P_PI, P_AR, P_IR, grid_size)
+    susceptible_counts.append(np.sum(grid == 'S'))
+    exposed_counts.append(np.sum(grid == 'E'))
+    presymptomatic_counts.append(np.sum(grid == 'P'))
+    asymptomatic_counts.append(np.sum(grid == 'A'))
+    infected_counts.append(np.sum(grid == 'I'))
+    recovered_counts.append(np.sum(grid == 'R'))
 
-1. **Complexity**:
-   - The SIR model is simpler with only three compartments and uniform mixing assumptions.
-   - The extended model is more complex, incorporating additional states (P and A) and network-based interactions.
+# Plot results
+plt.plot(susceptible_counts, label='Susceptible')
+plt.plot(exposed_counts, label='Exposed')
+plt.plot(presymptomatic_counts, label='Presymptomatic')
+plt.plot(asymptomatic_counts, label='Asymptomatic')
+plt.plot(infected_counts, label='Infected')
+plt.plot(recovered_counts, label='Recovered')
+plt.xlabel('Days')
+plt.ylabel('Population')
+plt.legend()
+plt.show()
+```
 
-2. **Realism**:
-   - The SIR model provides a broad, generalized view of epidemic dynamics.
-   - The extended model offers a more detailed and realistic representation of COVID-19 spread, considering asymptomatic transmission and contact network structure.
+### Explanation:
 
-3. **Application**:
-   - The SIR model is suitable for basic theoretical studies and initial outbreak predictions.
-   - The extended model is better suited for detailed public health interventions and policy-making during pandemics like COVID-19.
+1. **Initialization**:
+   - The grid is initialized with all `S` (susceptible) individuals.
+   - A few random individuals are set to `E` (exposed).
 
-In essence, while the SIR model is useful for understanding basic epidemic dynamics, the network-based SEIR-like model described in the document is tailored to capture the complexities of COVID-19 transmission, making it more applicable for practical use in controlling the pandemic.
+2. **Neighbor Function**:
+   - The `get_neighbors` function returns the valid neighboring positions for an individual.
+
+3. **Grid Update**:
+   - The `update_grid` function iterates through the grid and updates each individual's state based on the transition probabilities and neighbor influence:
+     - **Susceptible (S)**: Can become exposed (E) based on contact with asymptomatic (A), presymptomatic (P), or infected (I) neighbors.
+     - **Exposed (E)**: Can become presymptomatic (P) based on probability.
+     - **Presymptomatic (P)**: Can become asymptomatic (A) or symptomatic (I) based on probabilities.
+     - **Asymptomatic (A)**: Can recover (R) based on probability.
+     - **Infected (I)**: Can recover (R) based on probability.
+     - **Recovered (R)**: Remains recovered.
+
+4. **Simulation**:
+   - For each day, the grid is updated and the counts of susceptible, exposed, presymptomatic, asymptomatic, infected, and recovered individuals are recorded.
+
+This approach extends the individual-based SEAIR model to an SEPAIR model, adding the presymptomatic state to capture more detailed disease dynamics.
