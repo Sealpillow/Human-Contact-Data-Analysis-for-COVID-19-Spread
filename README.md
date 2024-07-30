@@ -165,3 +165,79 @@ plt.show()
    - For each day, the grid is updated and the counts of susceptible, exposed, presymptomatic, asymptomatic, infected, and recovered individuals are recorded.
 
 This approach extends the individual-based SEAIR model to an SEPAIR model, adding the presymptomatic state to capture more detailed disease dynamics.
+
+
+The use of `random.random()` is to simulate the element of chance or randomness in the transitions between states. It helps to model the stochastic nature of disease spread, where not every susceptible individual will become infected upon exposure, but rather there is a certain probability that this will happen. Here's a bit more detail:
+
+### Purpose of `random.random()`
+
+1. **Simulate Probability**:
+   - `random.random()` generates a random floating-point number between 0 and 1.
+   - This number is used to simulate whether a probabilistic event (such as infection) occurs.
+
+2. **Compare with Transition Probability**:
+   - By comparing the generated random number to a predefined probability, we can decide if the transition should happen.
+   - For example, if the probability of infection is 0.3, then there is a 30% chance that a susceptible individual will become infected when exposed to an infectious neighbor.
+
+### How It Works
+
+Let's break down the logic used in the model:
+
+1. **Probability Calculation**:
+   - The probability of infection given multiple infectious neighbors is calculated as `1 - (1 - P_SE) ** infectious_neighbors`.
+   - This calculation considers the combined risk from all infectious neighbors.
+
+2. **Random Number Generation**:
+   - `random.random()` generates a number between 0 and 1.
+   - This number represents a random event occurring, uniformly distributed across the probability space.
+
+3. **Decision Making**:
+   - By checking if `random.random() < calculated_probability`, we determine if the event (e.g., infection) happens.
+   - If the random number is less than the calculated probability, the event occurs (the state changes).
+
+### Example
+
+Assume:
+- \( P_{SE} = 0.3 \)
+- An individual has 2 infectious neighbors.
+- Calculated probability of infection is `1 - (1 - 0.3) ** 2 = 0.51`.
+
+If `random.random()` generates a number less than 0.51, the individual becomes presymptomatic.
+
+### Why Use Randomness?
+
+Using randomness in simulations allows us to:
+- Model real-world uncertainty and variability.
+- Capture the probabilistic nature of disease spread.
+- Perform multiple runs to observe different possible outcomes and understand the range of potential scenarios.
+
+### Complete Code Context
+
+Here is the part of the code using `random.random()`:
+
+```python
+def update_grid(grid, P_SP, P_PA, P_PI, P_AR, P_IR, grid_size):
+    new_grid = grid.copy()
+    for i in range(grid_size):
+        for j in range(grid_size):
+            if grid[i, j] == 'S':
+                infectious_neighbors = sum(1 for ni, nj in get_neighbors(i, j, grid_size) if grid[ni, nj] in ['P', 'A', 'I'])
+                if random.random() < 1 - (1 - P_SP) ** infectious_neighbors:
+                    new_grid[i, j] = 'P'
+            elif grid[i, j] == 'P':
+                if random.random() < P_PA:
+                    new_grid[i, j] = 'A'
+                elif random.random() < P_PI:
+                    new_grid[i, j] = 'I'
+            elif grid[i, j] == 'A':
+                if random.random() < P_AR:
+                    new_grid[i, j] = 'R'
+            elif grid[i, j] == 'I':
+                if random.random() < P_IR:
+                    new_grid[i, j] = 'R'
+    return new_grid
+```
+
+In this function:
+- The state of each individual is updated based on their current state and the calculated probabilities.
+- Random numbers decide if a state transition happens, effectively simulating the randomness of real-life disease transmission.
