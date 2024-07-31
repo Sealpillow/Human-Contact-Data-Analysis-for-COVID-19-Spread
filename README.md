@@ -241,3 +241,85 @@ def update_grid(grid, P_SP, P_PA, P_PI, P_AR, P_IR, grid_size):
 In this function:
 - The state of each individual is updated based on their current state and the calculated probabilities.
 - Random numbers decide if a state transition happens, effectively simulating the randomness of real-life disease transmission.
+
+
+Yes, in the given code snippet, `P_PA` (the probability that a presymptomatic individual becomes asymptomatic) indeed has higher priority than `P_PI` (the probability that a presymptomatic individual becomes symptomatic). This is because the `elif` condition for `P_PI` is only evaluated if the `if` condition for `P_PA` is not met.
+
+Let's break it down:
+
+```python
+elif grid[i, j] == 'P':
+    if random.random() < P_PA:
+        new_grid[i, j] = 'A'
+    elif random.random() < P_PI:
+        new_grid[i, j] = 'I'
+```
+
+### How it works:
+1. **If `grid[i, j] == 'P'`**:
+   - Check the first condition: `if random.random() < P_PA`.
+   - If this condition is true, the individual transitions from presymptomatic to asymptomatic (`new_grid[i, j] = 'A'`).
+   - If the first condition is false, then check the second condition: `elif random.random() < P_PI`.
+   - If the second condition is true, the individual transitions from presymptomatic to symptomatic (`new_grid[i, j] = 'I'`).
+
+### Priority and Probabilities:
+- **Priority**:
+  - The first condition (`if random.random() < P_PA`) is always checked first.
+  - The second condition (`elif random.random() < P_PI`) is only checked if the first condition fails.
+- **Effect of this Priority**:
+  - Even if `random.random() < P_PI` might be true, it will not be evaluated if `random.random() < P_PA` is already true.
+  - This means `P_PA` has a higher priority in determining the state transition.
+
+### Correcting the Priority Issue:
+To ensure both transitions are checked independently, you should generate the random number once and use it for both checks. This way, each probability is evaluated without one taking priority over the other. Here’s how you can do it:
+
+```python
+elif grid[i, j] == 'P':
+    rand = random.random()
+    if rand < P_PA:
+        new_grid[i, j] = 'A'
+    elif rand < P_PA + P_PI:  # Ensure this doesn't overlap with the first condition
+        new_grid[i, j] = 'I'
+```
+
+In this corrected version:
+- A single random number `rand` is generated.
+- If `rand` is less than `P_PA`, the individual becomes asymptomatic.
+- If `rand` is between `P_PA` and `P_PA + P_PI`, the individual becomes symptomatic.
+
+This ensures the probabilities are evaluated in a non-prioritized manner. Note that the sum of `P_PA` and `P_PI` should be less than or equal to 1 to avoid overlaps.
+
+Example:
+
+- **rand = 0.5**
+- **P_PA = 0.2**
+- **P_PI = 0.4**
+
+### Conditions:
+
+1. **First Condition**:
+   ```python
+   if rand < P_PA:
+   ```
+   - `rand < 0.2`
+   - For `rand = 0.5`, this condition is **not** satisfied because 0.5 is not less than 0.2.
+   - This means the transition to `A` (asymptomatic) does not occur.
+
+2. **Second Condition**:
+   ```python
+   elif rand < P_PA + P_PI:
+   ```
+   - `rand < 0.2 + 0.4`
+   - `rand < 0.6`
+   - For `rand = 0.5`, this condition **is** satisfied because 0.5 is less than 0.6.
+   - This means the transition to `I` (symptomatic) occurs.
+
+### Conclusion:
+
+- If `rand` falls between 0 and 0.2 (the range defined by `P_PA`), the presymptomatic individual becomes asymptomatic.
+- If `rand` falls between 0.2 and 0.6 (the range defined by `P_PI`), the presymptomatic individual becomes symptomatic.
+- This ensures that the probabilities are checked correctly without giving one priority over the other.
+
+### Important Note:
+Make sure that the sum of `P_PA` and `P_PI` does not exceed 1 to ensure the probabilities are valid and do not overlap improperly. If there are any other states or transitions, their probabilities should be adjusted accordingly.
+
