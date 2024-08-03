@@ -36,7 +36,7 @@ The challenge with both presymptomatic and asymptomatic cases lies in their pote
 In summary, while presymptomatic individuals have been infected but not yet shown symptoms, asymptomatic individuals never display symptoms despite being carriers of the disease. Both play significant roles in the transmission dynamics of infectious diseases, underscoring the importance of testing, contact tracing, and preventive measures to curb their spread.
 
 
-### SEPAIR States
+### SPAIR States
 - **S**: Susceptible
 - **E**: Exposed (infected but not yet infectious)
 - **P**: Presymptomatic (infectious but not yet showing symptoms)
@@ -67,51 +67,169 @@ Here is the updated Python code that includes the presymptomatic state:
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
+import os 
+import math
 import random
+from scipy.integrate import quad
+
+def get_data(name):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(current_dir, "./data/{}".format(name))
+    edge = np.genfromtxt(path, dtype=np.int32)
+    connections = {} # connections{} contains connections between person to person?
+    # what is the first two column from the file?
+    for (i,j) in edge[:,0:2]: # selects the first two columns to be added to connections
+        if i in connections:
+            connections[i].add(j)
+        else:
+            connections[i] = set([j])
+        if j in connections:
+            connections[j].add(i)
+        else:
+            connections[j] = set([i])
+    
+    sortedConnections = dict(sorted(connections.items()))
+    return sortedConnections, dict(zip(sortedConnections.keys(),['S']*len(sortedConnections))) # return dictionary connections and a status dictionary where each key from connections maps to 'S'
+
+
+def F(t, j, beta):
+    #  from the report
+    #  Ci(t)=Pi(t)+Ii(t)+Ai(t)
+    #  F(t,j,β) = Cj(t)·β
+    return (P[j][t] + I[j][t] + A[j][t]) * beta
+
+# Define the PDFs f_P(t), f_I(t), and f_A(t) , just random formula
+def f_P(t):
+    return 0.1 * np.exp(-0.1 * t) if t >= 0 else 0  # Example PDF for P state
+
+def f_I(t):
+    return 0.2 * np.exp(-0.2 * t) if t >= 0 else 0  # Example PDF for I state
+
+def f_A(t):
+    return 0.3 * np.exp(-0.3 * t) if t >= 0 else 0  # Example PDF for A state
+
+
+# Compute the CDFs F_P(d), F_I(d), and F_A(d)
+def F_P(d):
+    result, _ = quad(f_P, -np.inf, d)
+    return result
+
+def F_I(d):
+    result, _ = quad(f_I, -np.inf, d)
+    return result
+
+def F_A(d):
+    result, _ = quad(f_A, -np.inf, d)
+    return result
+
+
+def Beta():
+    # Basic reproduction number
+    basicReproNum_r0 = 3.
+    # proportion of asymptomatic infected cases =  Number of asymptomatic individuals/Total number of infected individuals   
+    p = sum(1 for value in statusDict.values() if value == 'A')/ sum(1 for value in statusDict.values() if value in ['P','I','A'])  
+    # average time of the virus carried by infected individuals in state A
+    mu_A = 20.0  
+    # average time of the virus carried by infected individuals in state P
+    mu_P = 1.43  
+    # average time of the virus carried by infected individuals in state I
+    mu_I = 8.8  
+    # standard deviation of the virus carried by infected individuals in state P
+    sigma_P = 0.66  
+    total_connections = sum(1 for person in connectionsDict for connections in connectionsDict[person])
+    avgNumNeighNet_k = total_connections/population
+    avgtimesusceptible_lambda = p * mu_A + (1 - p) * (math.exp(mu_P + (sigma_P**2) / 2) + mu_I)
+    beta = basicReproNum_r0 / (avgtimesusceptible_lambda * avgNumNeighNet_k)
+    return beta
+
+
+# update probabilities for the next day 
+def update_probabilities(t):
+    global S,E,P,A,I,R
+    d = 2 # not sure how to determine duration length d
+    # proportion of asymptomatic infected cases =  Number of asymptomatic individuals/Total number of infected individuals
+    # 15%?
+    p = sum(1 for value in statusDict.values() if value == 'A')/ sum(1 for value in statusDict.values() if value in ['P','I','A'])  
+    for i in range(population):
+        personStatus = statusDict[i]
+        if personStatus == 'S':  # if person in S state update prob accordingly
+            # S->S
+            S[i][t+1] = S[i][t] * np.prod([(1 - F(t, j, Beta())) for j in connectionsDict[i]]) 
+            infection_prob = 1 - np.prod([(1 - F(t, j, Beta())) for j in connectionsDict[i]])
+            # S->P transition from state S at day i to state P at day i+1 
+            P[i, t+1] = S[i][t] * (1-p) * infection_prob  
+            # S->A
+            A[i, t+1] = S[i][t] * p * infection_prob        
+        if personStatus == 'P':  # if person in P state update prob accordingly
+            P[i][t+1] = P[i][t] * (1 - F_P(d)) / (1 - F_P(d - 1))
+            I[i][t+1] = np.sum(P[i][1:]) * (F_P(d) - F_P(d-1)) / (1 - F_P(d-1))
+        if personStatus == 'I':  # if person in I state update prob accordingly
+            I[i][t+1] = I[i][t] * (1 - F_I(d)) / (1 - F_I(d - 1))
+            R[i][t+1] = R[i][t] +  np.sum(A[i][1:]) * (F_A(d) - F_A(d-1)) / (1 - F_A(d-1)) + np.sum(I[i][1:]) * (F_I(d) - F_I(d-1)) / (1 - F_I(d-1))
+        if personStatus == 'A':  # if person in A state update prob accordingly
+            A[i][t+1] = A[i][t] * (1 - F_A(d)) / (1 - F_A(d - 1))
+            R[i][t+1] = R[i][t] +  np.sum(A[i][1:]) * (F_A(d) - F_A(d-1)) / (1 - F_A(d-1)) + np.sum(I[i][1:]) * (F_I(d) - F_I(d-1)) / (1 - F_I(d-1))
+
+
+
+
+def update_status(statusDict, day):
+    new_status = statusDict.copy()
+    # iterate every single person, each person in each grid[i][j]
+    for person,status in statusDict.items():
+        rand = random.random()  # rolling probability
+        if status == 'S':                                 # Person at Susceptible state 
+            if rand <  E[person][day]:                    # Probability that Susceptible becomes Presymptomatic
+                new_status[person] = 'E'             
+        elif status == 'E':                               # Person at Exposed state 
+            if rand < P[person][day]:                     # Probability that Exposed becomes Presymptomatic
+                new_status[person] = 'P'            
+        elif status == 'P':                               # Person at Presymptomatic state 
+            if rand < A[person][day]:                     # Probability that Presymptomatic becomes Asymptomatic
+                new_status[person] = 'A'
+            elif rand < A[person][day] + I[person][day]:  # Probability that Presymptomatic becomes Infectious
+                new_status[person] = 'I'
+        elif status == 'A':                               # Person at Asymptomatic state 
+            if rand < R[person][day]:                     # Probability that Asymptomatic becomes Recovered
+                new_status[person] = 'R'
+        elif status == 'I':                               # Person at Infectious state 
+            if rand < R[person][day]:                     # Probability that Infectious becomes Recovered
+                new_status[person] = 'R'
+    return new_status
+
+
+
+
+
+# connections = {1: {2, 5, 6, 50, 51}, ..., 409: {400, 389}, 410: {400, 387, 404, 389}}
+# status = {1: 'S', 2: 'S', 3: 'S', ..., 409: 'S', 410: 'S'}
+connectionsDict,statusDict = get_data('infectious')
 
 # Parameters
-P_SE = 0.3  # Probability that S becomes E after contact with A, P, or I
-P_EP = 0.2  # Probability that E becomes P
-P_PA = 0.1  # Probability that P becomes A
-P_PI = 0.1  # Probability that P becomes I
-P_AR = 0.05  # Probability that A recovers
-P_IR = 0.05  # Probability that I recovers
-days = 100
-grid_size = 50  # 50x50 grid for 2500 individuals
+population = 410
+days = 11
 
-# Initialize the grid with majority 'S' and a few 'E'
-grid = np.full((grid_size, grid_size), 'S')
-initial_exposed = [(random.randint(0, grid_size-1), random.randint(0, grid_size-1)) for _ in range(5)]
-for (i, j) in initial_exposed:
-    grid[i, j] = 'E'
+# Initialize arrays to store probabilites
+# S = [[0. 0. 0. ... 0. 0. 0.], ...,[0. 0. 0. ... 0. 0. 0.]]
 
-def get_neighbors(x, y, size):
-    neighbors = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
-    return [(i, j) for i, j in neighbors if 0 <= i < size and 0 <= j < size]
+# probability of transitioning to that state on that day
+S = np.zeros((population,days))  # Susceptible probability of remaining Susceptible the next day 
+E = np.zeros((population,days))  # Exposed
+P = np.zeros((population,days))  # Presymptomatic
+A = np.zeros((population,days))  # Asymptomatic
+I = np.zeros((population,days))  # Infectious
+R = np.zeros((population,days))  # Recovered
 
-def update_grid(grid, P_SE, P_EP, P_PA, P_PI, P_AR, P_IR, grid_size):
-    new_grid = grid.copy()
-    for i in range(grid_size):
-        for j in range(grid_size):
-            if grid[i, j] == 'S':
-                infectious_neighbors = sum(1 for ni, nj in get_neighbors(i, j, grid_size) if grid[ni, nj] in ['A', 'P', 'I'])
-                if random.random() < 1 - (1 - P_SE) ** infectious_neighbors:
-                    new_grid[i, j] = 'E'
-            elif grid[i, j] == 'E':
-                if random.random() < P_EP:
-                    new_grid[i, j] = 'P'
-            elif grid[i, j] == 'P':
-                if random.random() < P_PA:
-                    new_grid[i, j] = 'A'
-                elif random.random() < P_PI:
-                    new_grid[i, j] = 'I'
-            elif grid[i, j] == 'A':
-                if random.random() < P_AR:
-                    new_grid[i, j] = 'R'
-            elif grid[i, j] == 'I':
-                if random.random() < P_IR:
-                    new_grid[i, j] = 'R'
-    return new_grid
+
+# take note that  S, P, I, A, R, C:  are 2D array consist of individual result 
+# S[1][1] is the probability that the 
+# and not S[1] which means num of ppl susceptible at day 1
+
+# ramdomize infected people
+initial_exposed = [random.randint(0, population-1) for i in range(5)]  # select 5 random exposed person
+# Set infected people in the grid
+for exposed in initial_exposed:
+    statusDict[exposed] = 'E'
 
 # Simulation
 susceptible_counts = []
@@ -121,14 +239,16 @@ asymptomatic_counts = []
 infected_counts = []
 recovered_counts = []
 
-for day in range(days):
-    grid = update_grid(grid, P_SE, P_EP, P_PA, P_PI, P_AR, P_IR, grid_size)
-    susceptible_counts.append(np.sum(grid == 'S'))
-    exposed_counts.append(np.sum(grid == 'E'))
-    presymptomatic_counts.append(np.sum(grid == 'P'))
-    asymptomatic_counts.append(np.sum(grid == 'A'))
-    infected_counts.append(np.sum(grid == 'I'))
-    recovered_counts.append(np.sum(grid == 'R'))
+for day in range(1, days):
+    update_probabilities(day)
+    statusDict = update_status(statusDict, day)
+    susceptible_counts.append(sum(1 for person in statusDict for status in statusDict[person] if status == 'S'))
+    exposed_counts.append(sum(1 for person in statusDict for status in statusDict[person] if status == 'E'))
+    presymptomatic_counts.append(sum(1 for person in statusDict for status in statusDict[person] if status == 'P'))
+    asymptomatic_counts.append(sum(1 for person in statusDict for status in statusDict[person] if status == 'A'))
+    infected_counts.append(sum(1 for person in statusDict for status in statusDict[person] if status == 'I'))
+    recovered_counts.append(sum(1 for person in statusDict for status in statusDict[person] if status == 'R'))
+    
 
 # Plot results
 plt.plot(susceptible_counts, label='Susceptible')
@@ -216,26 +336,29 @@ Using randomness in simulations allows us to:
 Here is the part of the code using `random.random()`:
 
 ```python
-def update_grid(grid, P_SP, P_PA, P_PI, P_AR, P_IR, grid_size):
-    new_grid = grid.copy()
-    for i in range(grid_size):
-        for j in range(grid_size):
-            if grid[i, j] == 'S':
-                infectious_neighbors = sum(1 for ni, nj in get_neighbors(i, j, grid_size) if grid[ni, nj] in ['P', 'A', 'I'])
-                if random.random() < 1 - (1 - P_SP) ** infectious_neighbors:
-                    new_grid[i, j] = 'P'
-            elif grid[i, j] == 'P':
-                if random.random() < P_PA:
-                    new_grid[i, j] = 'A'
-                elif random.random() < P_PI:
-                    new_grid[i, j] = 'I'
-            elif grid[i, j] == 'A':
-                if random.random() < P_AR:
-                    new_grid[i, j] = 'R'
-            elif grid[i, j] == 'I':
-                if random.random() < P_IR:
-                    new_grid[i, j] = 'R'
-    return new_grid
+def update_status(statusDict, day):
+    new_status = statusDict.copy()
+    # iterate every single person, each person in each grid[i][j]
+    for person,status in statusDict.items():
+        rand = random.random()  # rolling probability
+        if status == 'S':                                 # Person at Susceptible state 
+            if rand <  E[person][day]:                    # Probability that Susceptible becomes Presymptomatic
+                new_status[person] = 'E'             
+        elif status == 'E':                               # Person at Exposed state 
+            if rand < P[person][day]:                     # Probability that Exposed becomes Presymptomatic
+                new_status[person] = 'P'            
+        elif status == 'P':                               # Person at Presymptomatic state 
+            if rand < A[person][day]:                     # Probability that Presymptomatic becomes Asymptomatic
+                new_status[person] = 'A'
+            elif rand < A[person][day] + I[person][day]:  # Probability that Presymptomatic becomes Infectious
+                new_status[person] = 'I'
+        elif status == 'A':                               # Person at Asymptomatic state 
+            if rand < R[person][day]:                     # Probability that Asymptomatic becomes Recovered
+                new_status[person] = 'R'
+        elif status == 'I':                               # Person at Infectious state 
+            if rand < R[person][day]:                     # Probability that Infectious becomes Recovered
+                new_status[person] = 'R'
+    return new_status
 ```
 
 In this function:
