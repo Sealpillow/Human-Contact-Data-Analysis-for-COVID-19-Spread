@@ -1,0 +1,12 @@
+0
+numpy
+scipy
+dash
+dash-bootstrap-components
+dash-cytoscape
+plotly
+waitress
+pandas
+pyautogui
+jsonpickle
+matplotlib
