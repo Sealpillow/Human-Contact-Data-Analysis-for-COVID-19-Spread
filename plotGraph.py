@@ -3,12 +3,9 @@ import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import scipy.stats as stats 
 from scipy.stats import lognorm, norm
-import pyautogui
 from plotly.subplots import make_subplots
 import os
 import pandas as pd
-from math import floor
-screen_width, screen_height = pyautogui.size()
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def plotResult(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts,infected_counts,recovered_counts):
