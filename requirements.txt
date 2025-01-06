@@ -6,7 +6,6 @@ dash-cytoscape
 plotly
 waitress
 pandas
-pyautogui
 jsonpickle
 matplotlib
 gunicorn
