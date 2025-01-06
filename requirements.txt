@@ -9,3 +9,4 @@ pandas
 jsonpickle
 matplotlib
 gunicorn
+gevent
