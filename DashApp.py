@@ -972,8 +972,8 @@ def update_table(active_cell, table_data):
 
 
 if __name__ == '__main__':
-    server = app.server
-    #app.run_server(debug=False)
+    #server = app.server
+    app.run_server(debug=False)
 
     #print("url: http://localhost:8080/")
 
