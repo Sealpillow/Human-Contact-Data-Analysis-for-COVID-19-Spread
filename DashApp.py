@@ -973,7 +973,7 @@ def update_table(active_cell, table_data):
 
 if __name__ == '__main__':
     
-    app.enable_dev_tools(debug=True)
+    app.run_server(debug=True)
 
     #print("url: http://localhost:8080/")
 
