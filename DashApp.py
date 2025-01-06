@@ -23,7 +23,7 @@ progress_path = os.path.join(current_dir, "progress.txt")
 factors_path = os.path.join(current_dir, "./data/factors.csv")
 # Create the Dash app with Bootstrap styles
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP])
-server = app.server
+
 df = pd.read_csv(factors_path)
 
 dailyNetwork = None  # this hold the recently generated network
@@ -973,4 +973,10 @@ def update_table(active_cell, table_data):
     return "Click the table"
 
 
+if __name__ == '__main__':
+    #app.run_server(debug=False)
+
+    #print("url: http://localhost:8080/")
+
+    serve(app.server, host='0.0.0.0', port=8080, threads=7)
 
