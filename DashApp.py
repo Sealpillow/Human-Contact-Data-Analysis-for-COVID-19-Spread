@@ -7,7 +7,6 @@ import json
 import jsonpickle
 import plotly.io as pio
 import dash
-import pyautogui
 import plotly.graph_objects as go
 from waitress import serve
 from countryProportion import generateProportion
