@@ -977,5 +977,5 @@ if __name__ == '__main__':
 
     #print("url: http://localhost:8080/")
 
-    serve(app.server, host='0.0.0.0', port=8080, threads=7)
+    server = app.server
 
