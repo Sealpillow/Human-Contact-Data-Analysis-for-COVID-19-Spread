@@ -14,8 +14,6 @@ from countryProportion import generateProportion
 from plotGraph import plotCountConnections,plotDistributionSubPlot
 import pandas as pd
 
-screen_width, screen_height = pyautogui.size()
-
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # template_path = os.path.join(current_dir, "external_program.py")
 template_path = os.path.join(current_dir, "SPAIR.py")
