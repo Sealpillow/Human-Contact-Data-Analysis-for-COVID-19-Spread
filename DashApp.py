@@ -972,9 +972,9 @@ def update_table(active_cell, table_data):
 
 
 if __name__ == '__main__':
-    #app.run_server(debug=False)
+    app.run_server(debug=False)
 
     #print("url: http://localhost:8080/")
 
-    serve(app.server, host='0.0.0.0', port=8080, threads=7)
+    #serve(app.server, host='0.0.0.0', port=8080, threads=7)
 
