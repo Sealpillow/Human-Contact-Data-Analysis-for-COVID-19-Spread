@@ -1,3 +1,4 @@
+from math import floor
 import random
 import os
 import numpy as np
@@ -103,27 +104,13 @@ def generate_connections(population, rng, age_dict):
           connections can be made.
     """
 
-    # Define age ranges and corresponding (min, max) connections  this is based on report
-    # https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.0050074&s=09
-    age_ranges = [
-        ((1, 4), (10.21, 7.65)),
-        ((5, 9), (14.81, 10.09)),
-        ((10, 14), (18.22, 12.27)),
-        ((15, 19), (17.58, 12.03)),
-        ((20, 29), (13.57, 10.60)),
-        ((30, 39), (14.14, 10.15)),
-        ((40, 49), (13.83, 10.86)),
-        ((50, 59), (12.30, 10.23)),
-        ((60, 69), (9.21, 7.96)),
-        ((70, 100), (6.89, 5.83)),
-    ]
-
     connections = set()
     connections_count = {i: 0 for i in range(1, population + 1)}
 
     # Generate required number of connections per individual
     required_connections = {}
     for person, age in age_dict.items():
+        '''
         mean, sd = get_mean_sd(age, age_ranges)
         if mean is None or sd is None:
             raise ValueError(f"Age {age} does not fall into any defined range.")
@@ -131,8 +118,11 @@ def generate_connections(population, rng, age_dict):
         # Generate number of connections using normal distribution, based on age group mean and sd, rounded down
         num_connections = 0
         while num_connections < 1: num_connections = int(np.random.normal(mean, sd)) # round down
+        '''
+        num_connections = 0
+        # uniform distribution
+        while num_connections < 1: num_connections = rng.integers(1, 56) # range: 1-55 99.7% of data lies within 3 standard deviations. Upper bound = Mean + 3 * SD = 18.22 + 3 * 12.27 = 18.22 + 36.81 = 55.03
         required_connections[person] = num_connections
-
 
     # Track individuals who still need to meet their required connections
     not_reached_req = set(range(1, population + 1))
@@ -168,7 +158,165 @@ def generate_connections(population, rng, age_dict):
     return connections
 
 
-def GenerateInfectiousSameConnections(population, days, seed, ageGroupsDistribution):
+def generate_connections2(population, rng, age_dict):
+    """
+    Generates a set of social connections between individuals based on age-specific contact probabilities 
+    and connection requirements derived from age groups.
+
+    Args:
+        population (int): The total number of individuals in the population.
+        rng (numpy.random.Generator): A random number generator instance for creating connections.
+        age_dict (dict): A dictionary mapping individual IDs (1 to population) to their ages.
+
+    Returns:
+        set: A set of connections, where each connection is a tuple of two individual IDs (e.g., (person1, person2)).
+
+    Description:
+        - This function simulates social connections in a population based on reported contact patterns 
+          (e.g., from studies or surveys) and age-dependent connection requirements.
+
+        - **Age Ranges and Connection Requirements**:
+          - Defines age ranges and corresponding mean and standard deviation for the number of connections 
+            based on reported data.
+
+        - **Contact Matrix**:
+          - Uses a predefined contact matrix (`M_full`) to represent the likelihood of interaction between 
+            different age groups.
+          - The matrix is normalized so that each row sums to 1, representing probabilities.
+
+        - **Connection Generation**:
+          - For each individual, calculates the required number of connections using a normal distribution 
+            based on their age group.
+          - Ensures that each individual has at least one connection.
+
+        - **Connection Probabilities**:
+          - Randomly selects two eligible individuals and determines if they should form a connection based 
+            on their age groups and the contact probabilities from the normalized contact matrix.
+
+        - **Connection Tracking**:
+          - Tracks the number of connections made for each individual.
+          - Ensures individuals reach their required number of connections, while avoiding duplicate or 
+            redundant connections.
+
+        - **Stopping Criteria**:
+          - Stops generating connections when either:
+            - All individuals have reached their required connections, or
+            - There are fewer than 15 eligible individuals left to form new connections.
+
+    Raises:
+        ValueError: If an individual's age does not fall into any of the defined age ranges.
+
+    Notes:
+        - The `connections` set ensures that each connection is unique and undirected.
+        - Uses age-based contact probabilities to model realistic social interaction patterns.
+        - Handles edge cases, such as individuals with very few potential contacts.
+
+    Example:
+        population = 100
+        rng = np.random.default_rng(seed=42)
+        age_dict = {i: rng.integers(1, 80) for i in range(1, population + 1)}
+        connections = generate_connections2(population, rng, age_dict)
+    """
+
+    # Define age ranges and corresponding (min, max) connections  this is based on report
+    # https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.0050074&s=09
+    age_ranges = [
+        ((1, 4), (10.21, 7.65)),
+        ((5, 9), (14.81, 10.09)),
+        ((10, 14), (18.22, 12.27)),
+        ((15, 19), (17.58, 12.03)),
+        ((20, 29), (13.57, 10.60)),
+        ((30, 39), (14.14, 10.15)),
+        ((40, 49), (13.83, 10.86)),
+        ((50, 59), (12.30, 10.23)),
+        ((60, 69), (9.21, 7.96)),
+        ((70, 100), (6.89, 5.83)),
+    ]
+
+    connections = set()
+    connections_count = {i: 0 for i in range(1, population + 1)}
+
+    # Contact matrix
+    M_full = np.array([
+        [19.2, 4.8, 3.0, 7.1, 3.7, 3.1, 2.3, 1.4, 1.4],
+        [4.8, 42.4, 6.4, 5.4, 7.5, 5.0, 1.8, 1.7, 1.7],
+        [3.0, 6.4, 20.7, 9.2, 7.1, 6.3, 2.0, 0.9, 0.9],
+        [7.1, 5.4, 9.2, 16.9, 10.1, 6.8, 3.4, 1.5, 1.5],
+        [3.7, 7.5, 7.1, 10.1, 13.1, 7.4, 2.6, 2.1, 2.1],
+        [3.1, 5.0, 6.3, 6.8, 7.4, 10.4, 3.5, 1.8, 1.8],
+        [2.3, 1.8, 2.0, 3.4, 2.6, 3.5, 7.5, 3.2, 3.2],
+        [1.4, 1.7, 0.9, 1.5, 2.1, 1.8, 3.2, 7.2, 7.2],
+        [1.4, 1.7, 0.9, 1.5, 2.1, 1.8, 3.2, 7.2, 7.2]
+    ])
+
+    # Sum of all contacts
+    total_contacts = np.sum(M_full)
+
+    # Normalize the matrix to get the probability
+    M_prob = M_full / total_contacts
+
+    # Generate required number of connections per individual
+    required_connections = {}
+    for person, age in age_dict.items():
+        mean, sd = get_mean_sd(age, age_ranges)
+        if mean is None or sd is None:
+            raise ValueError(f"Age {age} does not fall into any defined range.")
+
+        # Generate number of connections using normal distribution, based on age group mean and sd, rounded down
+        num_connections = 0
+        while num_connections < 1: num_connections = int(rng.normal(mean, sd)) # round down
+        required_connections[person] = num_connections
+
+
+    # Track individuals who still need to meet their required connections
+    not_reached_req = set(range(1, population + 1))
+
+    # Continue generating connections
+    while not_reached_req or any(connections_count[i] < required_connections[i] for i in range(1, population + 1)):
+        # Eligible people are those who haven't exceeded their required connections
+        eligible_people = [
+            person for person in range(1, population + 1)
+            if connections_count[person] < required_connections[person]
+        ]
+
+        if len(eligible_people) < 15:
+            break  # Exit if fewer than 15 eligible people are available
+
+        # Randomly select two different eligible individuals
+        person1, person2 = rng.choice(eligible_people, size=2, replace=False)
+
+        # Get age group contact Index based on person1
+        if age_dict[person1]<= 79:
+            ageIndex1 = floor(age_dict[person1]/10)     
+        else: 
+            ageIndex1 = 8
+        # Get age group contact Index based on person2
+        if age_dict[person2]<= 79:
+            ageIndex2 = floor(age_dict[person2]/10)     
+        else: 
+            ageIndex2 = 8
+
+        # Get age group contact probability based on person1 and person2 age groups
+        ageContactProb = M_prob[ageIndex1]
+        rand = rng.random()
+        if rand < ageContactProb[ageIndex2]:  # when probability is met
+            connection = tuple(sorted((person1, person2)))
+            # Create the connection if it doesn't already exist
+            if connection not in connections:
+                connections.add(connection)
+                connections_count[person1] += 1
+                connections_count[person2] += 1
+
+                # Update the not_reached_req pool
+                if connections_count[person1] >=required_connections[person1]:
+                    not_reached_req.discard(person1)
+                if connections_count[person2] >= required_connections[person2]:
+                    not_reached_req.discard(person2)
+
+    return connections
+
+
+def GenerateInfectiousSameConnections(population, days, seed, ageGroupsDistribution, checkbox):
     """
     Generates and writes daily connection data between individuals, considering their age, 
     for a given number of days. The connections are consistent across all days.
@@ -196,7 +344,10 @@ def GenerateInfectiousSameConnections(population, days, seed, ageGroupsDistribut
     rng = np.random.default_rng(seed)
     # Generate connections once for all days
     age_dict = assignAgeToIDs(population, rng, ageGroupsDistribution)
-    connections = generate_connections(population, rng, age_dict)
+    if 'age' not in checkbox:
+        connections = generate_connections(population, rng, age_dict)
+    else:
+        connections = generate_connections2(population, rng, age_dict)
     
     # Write connections for each day into the txt file
     with open(path, "w", newline='') as file:
@@ -225,7 +376,7 @@ def GenerateInfectiousSameConnections(population, days, seed, ageGroupsDistribut
 
 
 # Set the number of people, connections per day, and days
-def GenerateInfectiousUniqueConnections(population, days, seed, ageGroupsDistribution):
+def GenerateInfectiousUniqueConnections(population, days, seed, ageGroupsDistribution, checkbox):
     '''
     Generates and writes unique daily connection data between individuals, considering their age, 
     for a given number of days. The connections are distinct across all days.
@@ -261,7 +412,10 @@ def GenerateInfectiousUniqueConnections(population, days, seed, ageGroupsDistrib
         # Write the header (optional)
         writer.writerow(["Day", "Person1", "Person2", "Age1", "Age2"])
         for day in range(1, days + 1):
-            day_connections = generate_connections(population, rng, age_dict)
+            if 'age' not in checkbox:
+                day_connections = generate_connections(population, rng, age_dict)
+            else:
+                day_connections = generate_connections2(population, rng, age_dict)
             sorted_connections = []
 
             for p1, p2 in day_connections:

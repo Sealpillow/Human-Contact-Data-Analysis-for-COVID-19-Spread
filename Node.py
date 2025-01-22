@@ -35,7 +35,8 @@ class Node:
         C (float): Total probability of being in the Infectious state.
         age (int): Age of the individual represented by the node.
         day (int): Day of simulation when the node was created.
-        infectRateByAge (float): Infection rate determined by age group.
+        avgConnectionByAge (int): Average Connection determined by age group.
+        vaccinated (bool): Vaccination status of the person
     """
 
     def __init__(self, id, day, age):
@@ -51,7 +52,7 @@ class Node:
         self.C = 0                     # Total probability of infectious state
         self.age = age
         self.day = day
-        self.avgConnectionByAge = 0       # Infection rate by age
+        self.avgConnectionByAge = 0    # Average Connection by age
         self.vaccinated = False
         
     

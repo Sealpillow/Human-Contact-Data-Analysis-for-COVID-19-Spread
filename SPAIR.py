@@ -42,6 +42,7 @@ def getData(name, days):
               it creates new `Node` objects for them, assigning their infection rate based on their age.
             - It adds connections between the two individuals, ensuring that the relationship is undirected (both 
               individuals are connected to each other).
+        - Update each network with the total connection for the calculation of beta value
         - After processing all rows, the function returns the populated `DailyNetworks` object with nodes and connections 
           for each day.
     """
@@ -84,6 +85,12 @@ def getData(name, days):
 
             newNode1.addConnection(person2)
             newNode2.addConnection(person1)
+    # update total connections for each network, for calculation
+    for day in range(1, days+1):    
+        totalConnections = 0    
+        for person in dailyNetworks.getNetworkByDay(day).getNodes().values():
+            totalConnections += len(person.getConnections())  # count the total number of connections in then network -> edges
+        dailyNetworks.getNetworkByDay(day).totalConnections = totalConnections
 
     return dailyNetworks
     
@@ -136,23 +143,17 @@ def Beta(day, person):
     meanP = 1.43              # average time of the virus carried by infected individuals in state P
     meanI = 8.8               # average time of the virus carried by infected individuals in state I
     sigma_P = 0.66            # standard deviation of the virus carried by infected individuals in state P
-    overallInfectRate = 13.4
-    total_connections = 0 
-    for person in dailyNetwork.getNetworkByDay(day).getNodes().values():
-        total_connections += len(person.getConnections())  # count the total number of connections in then network -> edges
-    avgNumNeighNet_k = total_connections/population
+    currNetwork = dailyNetwork.getNetworkByDay(day)
+    avgNumNeighNet_k = currNetwork.totalConnections/population
     avgtimesusceptible_lambda = p * meanA + (1 - p) * (math.exp(meanP + (sigma_P**2) / 2) + meanI)
     
     # Report on reduction in infection rate
     # https://www.sciencedirect.com/science/article/pii/S0140673621004487?pes=vor&utm_source=tfo&getft_integrator=tfo
-    if 'vaccination' in checkbox:
+    if 'vaccination' in checkbox and person.vaccinated == True:
         if 1 <= day - interventionDay <=14:
             reproNum *= (1 - 0.3)
         elif day - interventionDay >= 15:
-            reproNum *= (1 - 0.75)
-    if 'age' in checkbox:
-        reproNum *= person.avgConnectionByAge/overallInfectRate        
-    
+            reproNum *= (1 - 0.75)     
 
     beta = reproNum / (avgtimesusceptible_lambda * avgNumNeighNet_k)
     # beta: 0.01989534303906822
@@ -160,6 +161,7 @@ def Beta(day, person):
 
 def F(t, j, beta):
     #  from the report 
+    #  Ci(t): total probability corresponds to that of a node is infectious
     #  Ci(t) = Pi(t) + Ii(t) + Ai(t)
     #  F(t,j,β) = Cj(t)·β
     global dailyNetwork
@@ -167,9 +169,7 @@ def F(t, j, beta):
 
 def getLatestPeriod(status, personID, day):
     global dailyNetwork
-
     count = 0
-
     for d in range(day,0,-1):
         xStatus = dailyNetwork.getNetworkByDay(d).getNode(personID).status
         if xStatus != status:
@@ -206,31 +206,20 @@ def update_probabilities(day):
             personNextDay.P = person.S * (1-p) * infectionProb                          
             personNextDay.A = person.S * p * infectionProb
             personNextDay.S = 1 - personNextDay.P - personNextDay.A
-            # old : personNextDay.S = person.S * np.prod([(1 - F(day, connection, Beta(day))) for connection in connections]) 
-            # new
             
-
         elif person.status == 'P':                                                           # if person in P state, update prob accordingly
             d = getLatestPeriod('P', person.id, day)                                         # get latest period where person is in P state
-            '''if 'age' in checkbox:
-                personNextDay.I = (sumProb(person.id, day, 'P'))  * (F_P(d) - F_P(d-1)) / (1 - F_P(d-1)) * 0.29
-            else:'''
             personNextDay.I = (sumProb(person.id, day, 'P',))  * (F_P(d) - F_P(d-1)) / (1 - F_P(d-1)) #* 0.29
             personNextDay.P = 1-personNextDay.I
 
         elif person.status == 'I':                                                           # if person in I state, update prob accordingly
             d = getLatestPeriod('I', person.id, day)                                         # get latest period where person is in I state
-            '''if 'age' in checkbox:
-                personNextDay.R = person.R + sumProb(person.id, day, 'I') * (F_I(d) - F_I(d-1)) / (1 - F_I(d-1)) * 0.04
-            else:'''
+
             personNextDay.R = person.R + sumProb(person.id, day, 'I') * (F_I(d) - F_I(d-1)) / (1 - F_I(d-1))#  * 0.04
             personNextDay.I = 1 - personNextDay.R
         elif person.status == 'A':                                                           # if person in A state, update prob accordingly
             d = getLatestPeriod('A', person.id, day)                                         # get latest period where person is in A state
-            '''if 'age' in checkbox:
-                personNextDay.R = person.R + sumProb(person.id, day, 'A') * (F_A(d) - F_A(d-1)) / (1 - F_A(d-1)) * 0.04
-            else:'''
-            personNextDay.R = person.R + sumProb(person.id, day, 'A') * (F_A(d) - F_A(d-1)) / (1 - F_A(d-1))#* 0.04
+            personNextDay.R = person.R + sumProb(person.id, day, 'A') * (F_A(d) - F_A(d-1)) / (1 - F_A(d-1)) #* 0.04
             personNextDay.A = 1 - personNextDay.R
         personNextDay.C = personNextDay.P + personNextDay.I + personNextDay.A 
 
@@ -238,7 +227,7 @@ def update_probabilities(day):
 
 
 def update_status(day, rng):
-    global dailyNetwork
+    global dailyNetwork,interventionDay, checkbox, vaccinatedHistoryList, percentVac
     currentNetworkNodes = dailyNetwork.getNetworkByDay(day).getNodes()
     for person in currentNetworkNodes.values():                                  # iterate every single person's status on that day
         personNextDay = dailyNetwork.getNetworkByDay(day+1).getNode(person.id)
@@ -281,6 +270,25 @@ def update_status(day, rng):
         else:         # should i do this? Recovered patients stay in recoved status or for Recovered patients, or will transition to a Susceptible state the next day, as they may get exposed again
             personNextDay.status = 'R'   
             personNextDay.R = 1 
+            
+    # If the next day is on or after the intervention day
+    if 'vaccination' in checkbox and day + 1 >= interventionDay:
+        vaccinationRate = percentVac/100  # 1% vaccination rate per day        
+        sortedPeopleByAge = dailyNetwork.getNetworkByDay(day + 1).getSortedNodeListByAge()
+        # Calculate the number of people to vaccinate (top 1% by age)
+        numPeopleToVaccinate = round(population*vaccinationRate)
+        # Since the nextDay network is created in a clean slate, so we have to update the vaccination history of that person
+        for personNextDay in sortedPeopleByAge:
+            if personNextDay.status == 'S' and not personNextDay.vaccinated:  # check if person is in Susceptible state and not vaccinated 
+                if personNextDay.id not in vaccinatedHistoryList:             # person was not vaccinated in the past
+                    personNextDay.vaccinated = True
+                    numPeopleToVaccinate -=1
+                    vaccinatedHistoryList.append(personNextDay.id)            # add personid to the vaccination history list
+                else:                                                         # Person was vaccinated in the past
+                    personNextDay.vaccinated = True
+            if numPeopleToVaccinate == 0:
+                break
+ 
 
 
 def simulate(seed, population, days, randomNumPeople):
@@ -339,16 +347,8 @@ def simulate(seed, population, days, randomNumPeople):
     return dailyNetwork, infectionPlot, stackBarPlot
 
 def main():
-    global dailyNetwork
-    global population
-    global days
-    global seed
-    global overallReproNum
-    global p 
-    global interventionDay
-    global checkbox
+    global dailyNetwork, population, days, seed, overallReproNum, p, interventionDay, checkbox, vaccinatedHistoryList, percentVac
     # Parameters
-
     '''
     sys.argv = [
     'python',                # Not typically part of sys.argv when executing the script itself
@@ -367,14 +367,17 @@ def main():
     'age',                   # checkbox[1]
     ]
     '''
-    '''
+    '''   
+    seed = 12345
+    overallReproNum = 3.5
     population = 410
     days = 100
     affected = 5
-    seed = 12345
+    interventionDay = 0
+    percentVac = 1
     radio = 'same'
-    checkbox = ['age']
     proportion = [20,20,20,20,20]
+    checkbox = ['vaccination']
     '''
     seed = int(sys.argv[1]) # to have a fix seed for reproducibility
     overallReproNum = float(sys.argv[2])
@@ -382,24 +385,22 @@ def main():
     days = int(sys.argv[4])
     affected = int(sys.argv[5])
     interventionDay = int(sys.argv[6])
-    radio = sys.argv[7]
-    proportion = [int(sys.argv[8]),int(sys.argv[9]),int(sys.argv[10]),int(sys.argv[11]),int(sys.argv[12])]
-    checkbox = sys.argv[13:] if len(sys.argv) > 13 else []
-    
+    percentVac = float(sys.argv[7])
+    radio = sys.argv[8]
+    proportion = [int(sys.argv[9]),int(sys.argv[10]),int(sys.argv[11]),int(sys.argv[12]),int(sys.argv[13])]
+    checkbox = sys.argv[14:] if len(sys.argv) > 14 else []
+     
+    vaccinatedHistoryList = [] # contain list of personID that has been vaccinated
     # Convert the comma-separated string back to a list
     with open("progress.txt", "w") as f:
         f.write(str(0))
 
-    #min_connections_per_person = 4
-    #max_repeated_connections = 2
-    avgDeg = 16.49
     p = 0.15                              # proportion of asymptomatic infected cases
-    connectionsPerDay = population*avgDeg # prob can set based on optimal connections
     populationPie, ageGroupsDistribution = plotAgeGroup(population, proportion)  
     if radio == 'unique': 
-        GenerateInfectiousUniqueConnections(population, days, seed, ageGroupsDistribution) # uncomment it if u want to continuous generate new connections
+        GenerateInfectiousUniqueConnections(population, days, seed, ageGroupsDistribution, checkbox) # uncomment it if u want to continuous generate new connections
     elif radio == 'same':
-        GenerateInfectiousSameConnections(population, days, seed, ageGroupsDistribution) # uncomment it if u want to continuous generate new connections
+        GenerateInfectiousSameConnections(population, days, seed, ageGroupsDistribution, checkbox) # uncomment it if u want to continuous generate new connections
     elif radio == 'complete':
         GenerateInfectiousCompleteConnections(population, days, seed, ageGroupsDistribution)
     elif radio == 'model':

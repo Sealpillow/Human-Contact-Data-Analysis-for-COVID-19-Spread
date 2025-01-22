@@ -38,14 +38,14 @@ def plotResult(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts
         'Susceptible': 'blue',
         'Presymptomatic': 'yellow',
         'Asymptomatic': 'purple',
-        'Infected': 'red',
+        'Infectious': 'red',
         'Recovered': 'green',
     }   
     data = {
         'Susceptible': susceptible_counts,
         'Presymptomatic': presymptomatic_counts,
         'Asymptomatic': asymptomatic_counts,
-        'Infected': infected_counts,
+        'Infectious': infected_counts,
         'Recovered': recovered_counts
     }
 
@@ -73,9 +73,9 @@ def plotResult(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts
         xaxis_title='Days',
         yaxis_title='Population',
         legend_title='Legend',
-        
+        title_text= "SPAIR Model Prediction"
     )
-
+    fig.write_json('./data/currPlotResult.json')
     # Show the figure
     #fig.show()
     return fig   
@@ -141,8 +141,9 @@ def plotAgeGroup(inputPopulation, specificProportion):
     # Second trace: showing category labels inside
     trace2 = go.Pie(
         **common_props,
-        textinfo='percent',
+        textinfo='percent + value',
         textposition='inside',
+        textfont=dict(size=14, color="black"),
         sort = False
     )
 
@@ -150,8 +151,8 @@ def plotAgeGroup(inputPopulation, specificProportion):
     fig = go.Figure(data=[trace1, trace2],)
 
     # Remove the legend
-    fig.update_layout(showlegend=False, title_text= "Age Group Composition")
-
+    fig.update_layout(showlegend=False, title_text= "Overall Population Age Group Composition")
+    fig.write_json('./data/currPlotAgeGroup.json')
     # Show the pie chart
     #fig.show()
     
@@ -186,7 +187,7 @@ def plotStackBar(days,susceptible_counts,presymptomatic_counts,asymptomatic_coun
         'Susceptible': 'blue',
         'Presymptomatic': 'yellow',
         'Asymptomatic': 'purple',
-        'Infected': 'red',
+        'Infectious': 'red',
         'Recovered': 'green',
     }   
     # Create the data dictionary
@@ -194,7 +195,7 @@ def plotStackBar(days,susceptible_counts,presymptomatic_counts,asymptomatic_coun
         'Susceptible': susceptible_counts,
         'Presymptomatic': presymptomatic_counts,
         'Asymptomatic': asymptomatic_counts,
-        'Infected': infected_counts,
+        'Infectious': infected_counts,
         'Recovered': recovered_counts
     }
 
@@ -218,7 +219,7 @@ def plotStackBar(days,susceptible_counts,presymptomatic_counts,asymptomatic_coun
         yaxis_title='Counts',
         legend_title='Infection States'
     )
-
+    fig.write_json('./data/currStackBar.json')
     # Show the plot
     #fig.show()
     return fig
@@ -266,13 +267,67 @@ def plotCountConnections(connections):
     fig.update_xaxes(tickmode='array', tickvals=x_range)
     # Show the plot
     #fig.show()
+    fig.write_json('./data/currPlotCountConnections.json')
     return fig
+
+def plotIndiConnAgeGroup(data, id):
+
+    # Define custom bins
+    bins = [0, 10, 20, 30, 40, 50, 60, 70, 80, np.inf]
+
+    # Use np.histogram to calculate the frequency of each bin
+    hist_values, bin_edges = np.histogram(data, bins=bins)
+
+    # Create the bar graph
+    categories = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80+']
+    values = hist_values
+
+    # Calculate percentages for text
+    total = sum(values)
+    percentages = [(value / total) * 100 for value in values]
+
+    # Define common properties for both traces
+    common_props = dict(
+        labels=categories,
+        values=values,
+        marker=dict(colors=['#e60049','#FFA500', '#FFD700','#32CD32','#0bb4ff'])  # Custom color sequence
+    )
+
+    # First trace: showing percentage outside
+    trace1 = go.Pie(
+        **common_props,
+        textinfo='label',
+        textposition='outside',
+        textfont=dict(size=14, color="black"),
+        sort = False
+    )
+
+    # Second trace: showing category labels inside
+    trace2 = go.Pie(
+        **common_props,
+        textinfo='percent + value',
+        textposition='inside',
+        textfont=dict(size=14, color="black"),
+        sort = False
+    )
+
+    # Create the figure with both traces overlapping
+    fig = go.Figure(data=[trace1, trace2],)
+
+    # Remove the legend
+    fig.update_layout(showlegend=False, title=f"Selected Individual Node {id} Connections Age Group",)
+
+    # Show the pie chart
+    #fig.show()
+    
+    return fig
+
 
 
 def plotDistributionSubPlot():
     """
     Creates a set of distribution plots showing the cumulative distribution function (CDF) for 
-    different stages of infection: Presymptomatic, Symptomatic, and Asymptomatic.
+    different stages of infection: Presymptomatic, Infectious, and Asymptomatic.
 
     Returns:
         plotly.graph_objects.Figure: A Plotly figure containing three subplots, each displaying a CDF 
@@ -284,7 +339,7 @@ def plotDistributionSubPlot():
         - The third subplot displays the CDF for the asymptomatic stage based on a normal distribution.
         - Each subplot includes axes labeled with "Time" (x-axis) and "Probability" (y-axis), and is 
           designed to provide insights into the distribution of infection stages over time.
-        - The overall figure is titled 'Distribution Plots: Presymptomatic, Symptomatic, Asymptomatic'.
+        - The overall figure is titled 'Distribution Plots: Presymptomatic, Infectious, Asymptomatic'.
     """
 
     # Mean and standard deviation for the lognormal distribution
@@ -298,7 +353,7 @@ def plotDistributionSubPlot():
     y1 = [lognorm(s=meanP, scale=np.exp(stdP)).cdf(v) for v in range(0, 51)]
 
     # Create a subplot with 1 row and 2 columns (you can modify the rows and columns as needed)
-    fig = make_subplots(rows=1, cols=3, subplot_titles=["Presymptomatic", "Symptomatic", "Asymptomatic"])
+    fig = make_subplots(rows=1, cols=3, subplot_titles=["Presymptomatic", "Infectious", "Asymptomatic"])
 
     # Add the first plot (CDF) to the first subplot
     fig.add_trace(go.Scatter(x=x, y=y1, mode='lines', name='Presymptomatic'), row=1, col=1)
@@ -309,7 +364,7 @@ def plotDistributionSubPlot():
 
     # Add another plot (e.g., a normal distribution PDF) to the second subplot
     y2 = [norm(loc=meanA, scale=stdA).cdf(v) for v in range(0,51) ]
-    fig.add_trace(go.Scatter(x=x, y=y2, mode='lines', name='Symptomatic'), row=1, col=2)
+    fig.add_trace(go.Scatter(x=x, y=y2, mode='lines', name='Infectious'), row=1, col=2)
 
 
     # Mean and standard deviation for the normal distribution
@@ -322,7 +377,7 @@ def plotDistributionSubPlot():
 
     # Update the layout for the entire figure (for common settings like title, etc.)
     fig.update_layout(
-        title='Distribution Plots: Presymptomatic, Symptomatic, Asymptomatic',
+        title='Distribution Plots: Presymptomatic, Infectious, Asymptomatic',
         showlegend=False
     )
 

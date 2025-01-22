@@ -23,6 +23,9 @@ class Network:
             ensuring the specified number of nodes is returned. 
             Nodes with the next highest number of connections, if specified number is not fulfilled by the highest.
 
+        getSortedNodeListByAge():
+            Return a list of node sorted by the oldest age
+
     Attributes:
         nodes (dict): A dictionary mapping node ids (keys) to node objects (values).
     """
@@ -54,5 +57,8 @@ class Network:
                     nodeList.append(node.id)
             max-=1
         return nodeList
+    
+    def getSortedNodeListByAge(self):
+        return sorted(self.nodes.values(), key=lambda node: node.age, reverse = True)
 
     

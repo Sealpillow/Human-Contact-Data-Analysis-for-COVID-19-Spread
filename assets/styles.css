@@ -33,6 +33,10 @@ label {
 .rc-slider-tooltip-inner{
     font-size: 15px;
 }
+#modal > div {
+    max-height: 850px;
+    overflow-y: auto;  /* Allow scrolling within the modal content */
+}
 
 
 

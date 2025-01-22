@@ -17,6 +17,7 @@ class DailyNetworks:
     """
     def __init__(self):
         self.networks = dict()
+        self.totalConnections = 0
 
     def addNetworkByDay(self, day, newNetwork):
         self.networks[day] = newNetwork

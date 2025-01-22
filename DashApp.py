@@ -1,4 +1,5 @@
 from dash import Dash, html, dcc, Output, Input, State, dash_table
+import dash.html as html
 import dash_bootstrap_components as dbc
 import subprocess
 import dash_cytoscape as cyto
@@ -10,19 +11,23 @@ import dash
 import plotly.graph_objects as go
 from waitress import serve
 from countryProportion import generateProportion
-from plotGraph import plotCountConnections,plotDistributionSubPlot
+from plotGraph import plotCountConnections,plotDistributionSubPlot, plotIndiConnAgeGroup
 import pandas as pd
+import numpy as np
+import shutil
 
+from generateTable import generate_contact_matrix_table,generate_vaccination_impact_contact_patterns_table
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # template_path = os.path.join(current_dir, "external_program.py")
 template_path = os.path.join(current_dir, "SPAIR.py")
 progress_path = os.path.join(current_dir, "progress.txt")
-factors_path = os.path.join(current_dir, "./data/factors.csv")
+
 # Create the Dash app with Bootstrap styles
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP,dbc.icons.FONT_AWESOME])
 server = app.server
-df = pd.read_csv(factors_path)
+
+
 
 dailyNetwork = None  # this hold the recently generated network
 infectionGraph = None
@@ -30,7 +35,9 @@ populationPie = None
 stackBarPlot = None
 countPlot = None
 distributionSubPlot = None
+indiAgeFreqPlot = None
 current_day = 1
+
 app.layout = html.Div([
 
     # Header section (optional)
@@ -48,29 +55,32 @@ app.layout = html.Div([
 
                 html.P([f"Seed Number",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="A random number, ensuring reproducibility of the same random sequence when used again.")]),
                 dcc.Input(id='seed-input', type='number', value=12345, className='dcc.Input',
-                          style={'margin-bottom': '15px', 'width': '190px', 'height': '25px', 'font-size': '15px'}),
+                          style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
                 html.P([f"Reproduction Number",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="The average number of people an infected person will spread a disease to")]),
                 dcc.Input(id='overallReproNum-input', type='number', step=0.1, value=3.5, min = 1.0, max = 20, className='dcc.Input',
-                          style={'margin-bottom': '15px', 'width': '190px', 'height': '25px', 'font-size': '15px'}),  
+                          style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),  
 
                 html.P([f"Population",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Size of population")]),
-                dcc.Input(id='population-input', type='number', value=410, min = 50, placeholder='Enter population', className='dcc.Input',
-                          style={'margin-bottom': '15px', 'width': '190px', 'height': '25px', 'font-size': '15px'}),
+                dcc.Input(id='population-input', type='number', value=1000, min = 50, placeholder='Enter population', className='dcc.Input',
+                          style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
                 html.P([f"Days",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Number of simulation days")]),
                 dcc.Input(id='day-input', type='number', value=100, min = 1, placeholder='Enter days', className='dcc.Input',
-                          style={'margin-bottom': '15px', 'width': '190px', 'height': '25px', 'font-size': '15px'}),
+                          style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
                 
                 html.P([f"Infected population",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Probability: 85% presymptomatic 15% asymptomatic")]),
                 html.Div([
                 dcc.Input(id='affected-input', type='number', value=5, min = 0, placeholder='Enter number of affected', className='dcc.Input',
-                          style={'margin-bottom': '15px', 'width': '190px', 'height': '25px', 'font-size': '15px'}),
+                          style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
-                html.P([f"Intervention Day",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "10px"},title="The day vaccination is implemented to population")]),
-                dcc.Input(id='interventionDay-input', type='number', value=0, min = 0, placeholder='Enter Vaccination Intervention Day', className='dcc.Input',
-                          style={'margin-bottom': '15px', 'width': '190px', 'height': '25px', 'font-size': '15px'}),          
+                html.P([f"Intervention Day",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "10px"},title="The day vaccination is implemented to population (Not on Day 1)")]),
+                dcc.Input(id='interventionDay-input', type='number', value=25, min = 2, placeholder='Enter Vaccination Intervention Day', className='dcc.Input',
+                          style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),          
 
+                html.P([f"Vaccination rate per day",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "10px"},title="The day vaccination is implemented to population (Not on Day 1)")]),
+                dcc.Input(id='percentVac-input', type='number', value=2.5, min = 0, max = 100, placeholder='Enter Percentage', className='dcc.Input',
+                          style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),          
                 dbc.Button(
                     'Generate',
                     id='generate-button',
@@ -85,13 +95,13 @@ app.layout = html.Div([
                     },
                     className='btn btn-primary',  # Bootstrap primary button style
                     size='md'                     # Medium size button (optional)
-                )],style={'display': 'inline-block'}),   
+                )],style={'display': 'inline-block'}),
                 dcc.Dropdown(
                     sorted(['Singapore', 'Japan', 'United States','New Zealand','Australia']),
                     id='dropdown-1',
                     placeholder="Country",
                     searchable=False,optionHeight=20,
-                    style={'margin-bottom': '10px', 'font-size': '15px', 'width': '190px'}    # Set the height
+                    style={'margin-bottom': '10px', 'font-size': '15px', 'width': '160px'}    # Set the height
                 ),
                 dcc.Slider(
                     id='slider-2', min=1950, max=2023, step=1, 
@@ -157,10 +167,28 @@ app.layout = html.Div([
                               style={'color': 'white', 'margin-bottom': '15px'}),
 
                 dcc.Interval(id="progress-interval", n_intervals=0, interval=500),
-                dbc.Progress(id="progress", value=0, label="", color="success",style={'margin-bottom': '5vh','--bs-progress-bar-color': 'black','--bs-progress-font-size': '0.9rem'}),
+                dbc.Progress(id="progress", value=0, label="", color="success",style={'margin-bottom': '15px','--bs-progress-bar-color': 'black','--bs-progress-font-size': '0.9rem'}),
+                # Button to trigger modal (popup)
+                dbc.Button('Compare Previous', id='open-modal-btn', n_clicks=0,
+                            style={
+                            'margin-bottom': '5vh',
+                            'font-size': '15px',  # Keep your font size
+                            'height': '27px',
+                            'width': '150px',
+                            'padding':'3px 10px'
+                            },
+                            className='btn btn-primary',  # Bootstrap primary button style
+                            size='md'                     # Medium size button (optional)
+                ),
                 html.P("Notes:",style={'margin-bottom': '1vh'}),
-                html.P("Reproduction Number: 3.5"),
-                html.P("Nodes having < 5 connections will have inner connections",style={'margin-bottom': '5vh'}),
+                html.P("Base Reproduction Number: 3.5"),
+                html.P("S (Susceptible): People who can catch the disease."),
+                html.P("P (Presymptomatic): People who have been infected but aren't showing symptoms yet."),
+                html.P("A (Asymptomatic): People who are infected but never show symptoms."),
+                html.P("I (Infectious/Symptomatic): People who are infected and can spread the disease."),
+                html.P("R (Recovered): People who had the disease and are now immune or no longer infectious."),
+                html.P("Nodes having < 5 connections will have inner connections")
+                
             ], style={'display': 'flex', 'flex-direction': 'column', 'padding': '20px', 
                       'background-color': '#222', 'border-radius': '10px'}),
 
@@ -169,7 +197,7 @@ app.layout = html.Div([
                 html.P([f"Node ID",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "10px"},title="To observe selected individual connections by id")]),
                 html.Div([
                 dcc.Input(id='node-input', type='number', value=1,
-                          style={'margin-bottom': '15px', 'width': '90px', 'height': '25px', 'font-size': '15px'}),
+                          style={'margin-bottom': '15px', 'width': '100px', 'height': '25px', 'font-size': '15px'}),
                 dbc.Button(
                     'Reset View',
                     id='reset-button',
@@ -195,14 +223,15 @@ app.layout = html.Div([
                            tooltip={"placement": "bottom", "always_visible": True}),          
                 html.Div(id='click-node-data', style={'margin-top': '15px','margin-bottom': '15px', 'color': 'white', 'font-size': '15px'}),
                 html.Div(id='status-data', style={'margin-bottom': '15px', 'color': 'white', 'font-size': '15px'}),
+                
             ], style={'padding': '20px', 'background-color': '#222', 'border-radius': '10px', 'margin-top': '15px'}),
 
-        ], className="left-panel", style={'flex': '1', 'padding': '20px'}),
+        ], className="left-panel", style={'flex': '1.1', 'padding': '20px'}),
 
         # Right panel
         html.Div([
             # First Cytoscape Network
-            html.H3("Visualizing Network progression", style={'margin-top': '15px', 'margin-bottom': '15px', 'color': 'white'}),
+            html.H3("Visualizing Network progression", style={'margin-bottom': '15px', 'color': 'white'}),
             html.P(id='animation-day', children='Current Day: {current_day}',
                    style={'margin-top': '15px', 'margin-bottom': '15px', 'color': 'white', 'font-size': '15px'}),
 
@@ -237,17 +266,12 @@ app.layout = html.Div([
                 dcc.Graph(id='plotly-graph3', style={'height': '80vh', 'margin-bottom': '1vh'}),
                 dcc.Graph(id='plotly-graph4', style={'height': '80vh', 'margin-bottom': '1vh'}),
                 dcc.Graph(id='plotly-graph5', style={'height': '80vh', 'margin-bottom': '1vh'}),
-                dash_table.DataTable(df.to_dict('records'),[{"name": i, "id": i} for i in df.columns], 
-                id='tbl',
-                style_data_conditional=[
-                    {
-                        'if': {'state': 'active'},  # Apply styles when a cell is hovered
-                        'backgroundColor': 'lightblue',  # Set hover background color
-                        'color': 'black',  # Set hover text color
-                        'border': '2px solid lightblue'
-                    }
-                ]),
+                dcc.Graph(id='plotly-graph6', style={'height': '80vh', 'margin-bottom': '1vh'}),
+                html.H3("Vaccination Impact and Contact Patterns Across Age Groups", style={'margin-bottom': '15px', 'color': 'white'}),
+                generate_vaccination_impact_contact_patterns_table(),
                 dbc.Alert(id='tbl_out'),
+                html.H3("Probability Contact Matrix (Normalized by row)", style={'margin-bottom': '15px', 'color': 'white'}),
+                generate_contact_matrix_table(),
                 dbc.Alert(
                     children=[
                         "Reference:",
@@ -272,11 +296,65 @@ app.layout = html.Div([
                             href='https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(21)00448-7/fulltext',  # URL to navigate to
                             target="_blank"  # Open the link in a new tab
                         ),
+                        html.Br(),
+                        "- Age Contact Matrix: ",
+                        html.A(
+                            'Link',  # Link text
+                            href='https://www.nature.com/articles/s41598-021-94609-3',  # URL to navigate to
+                            target="_blank"  # Open the link in a new tab
+                        ),
                     ],
-
                     id='tbl_references',
                     color="info"
-                )
+                ),
+                                # Modal (Popup window) content
+                html.Div(
+                    id='modal',
+                    children=[
+                        html.Div([
+                            html.H2("Comparison"),
+                            # Grid layout for graphs (2 columns)
+                            html.Div([
+                                html.Div([
+                                    html.H3("Previous", style={'text-align': 'center', 'margin-bottom': '10px'}),
+                                    dcc.Graph(id='popup-prevGraph1',style={'width': '700px'}),  
+                                    dcc.Graph(id='popup-prevGraph2',style={'width': '700px'}),
+                                    dcc.Graph(id='popup-prevGraph3',style={'width': '700px'}),
+                                    dcc.Graph(id='popup-prevGraph4',style={'width': '700px'}),
+                                ], style={'display': 'flex', 'flex-direction': 'column', 'gap': '10px'}),  # First column
+                                
+                                html.Div([
+                                    html.H3("Current", style={'text-align': 'center', 'margin-bottom': '10px'}),
+                                    dcc.Graph(id='popup-currGraph1',style={'width': '700px'}),  
+                                    dcc.Graph(id='popup-currGraph2',style={'width': '700px'}),
+                                    dcc.Graph(id='popup-currGraph3',style={'width': '700px'}),
+                                    dcc.Graph(id='popup-currGraph4',style={'width': '700px'}),
+                                ], style={'display': 'flex', 'flex-direction': 'column', 'gap': '10px'}),  # Second column
+                            ], style={'display': 'flex', 'gap': '20px', 'justify-content': 'space-between','overflow': 'hidden'}),  # Two-column grid
+
+                            # Close button
+                            html.Button('Close', id='close-modal-btn', n_clicks=0)
+                        ], style={'padding': '20px', 'background-color': 'white'})
+                    ],
+                    style={
+                        'display': 'none',  # Initially hidden
+                        'position': 'fixed',
+                        'top': '50%',  # Center the modal vertically
+                        'left': '50%',  # Center the modal horizontally
+                        'transform': 'translate(-50%, -50%)',  # Adjust to center properly
+                        'width': '100%',  # Set the width of the modal (adjust as needed)
+                        'max-width': '1480px',  # Max width for large screens
+                        'height': 'auto',  # Allow height to adjust based on content
+                        'max-height': '100vh',  # Set the maximum height to the viewport height
+                        'background-color': 'rgba(0, 0, 0, 0.5)',  # Semi-transparent background
+                        'justify-content': 'center',
+                        'align-items': 'center',
+                        'z-index': '1000',
+                        'border-radius': '10px',
+                        'overflow-x': 'hidden',  # Disable horizontal scrolling
+                        'overflow-y': 'auto',  # Enable vertical scrolling for the outer modal
+                        }
+                    )    
             ], style={'display': 'flex', 'flex-direction': 'column'}),
         ],
         className="right-panel", 
@@ -365,7 +443,7 @@ def process_network(network,selected_node, checkbox): # this update the nodes in
             'S': 'Susceptible',
             'P': 'Presymptomatic',
             'A': 'Asymptomatic',
-            'I': 'Infected',
+            'I': 'Infectious',
             'R': 'Recovered',
         }
         elements = []
@@ -380,8 +458,9 @@ def process_network(network,selected_node, checkbox): # this update the nodes in
             
             elements.append({'data': {'id': str(node.id), 
                              'label': f'Node {node.id}', 
-                             'status': statusMap.get(node.status), 
                              'age': str(node.age),
+                             'status': statusMap.get(node.status), 
+                             'vaccinated': f'Yes' if node.vaccinated == True else 'No',
                              'S': str(round(node.S* 100,1)) +'%', 
                              'P': str(round(node.P* 100,1)) +'%',
                              'A': str(round(node.A* 100,1)) +'%',
@@ -421,7 +500,7 @@ def process_network(network,selected_node, checkbox): # this update the nodes in
                         ]       
         return elements
 
-
+# 
 @app.callback(
     [Output('cytoscape', 'elements'), Output('generate-button', 'n_clicks')],
     [Input('generate-button', 'n_clicks'),
@@ -439,17 +518,20 @@ def process_network(network,selected_node, checkbox): # this update the nodes in
      State('day-input', 'value'),
      State('affected-input', 'value'),
      State('interventionDay-input', 'value'),
-     State('connection-radio', 'value')]
+     State('percentVac-input', 'value'),
+     State('connection-radio', 'value')
+     ]
 )
-def generate_and_update_network(n_clicks, selected_node, slider_value, checkbox, age1, age2, age3, age4, age5, seed, overallReproNum, population, days, affected, interventionDay,  radio):
+def generate_and_update_network(n_clicks, selected_node, slider_value, checkbox, age1, age2, age3, age4, age5, seed, overallReproNum, population, days, affected, interventionDay, percentVac, radio):
     global dailyNetwork, infectionGraph, populationPie, stackBarPlot, current_day
     # Handle "Generate" button click
     if n_clicks > 0 and population is not None:
         try:
             reset_file(progress_path)
+            renameFile()
             proportionList = [str(age1), str(age2), str(age3), str(age4), str(age5)]
             result = subprocess.run(
-                ['python', template_path, str(seed), str(overallReproNum), str(population), str(days), str(affected), str(interventionDay), str(radio)] + proportionList + checkbox,
+                ['python', template_path, str(seed), str(overallReproNum), str(population), str(days), str(affected), str(interventionDay),str(percentVac), str(radio)] + proportionList + checkbox,
                 capture_output=True,
                 text=True,
                 check=True
@@ -501,46 +583,56 @@ def split_connections(connections_str, items_per_line=8):
      
 
 @app.callback(
-    Output('click-node-data', 'children'),
-    Input('cytoscape', 'tapNodeData')
+    [Output('click-node-data', 'children'), Output('plotly-graph5', 'figure')],
+    [Input('cytoscape', 'tapNodeData'), Input('cytoscape', 'elements')]
 )
-def display_click_data(data):
+def display_click_data(data, elements):
+    global indiAgeFreqPlot
     statusColourMap = {
         'Susceptible': 'blue',
         'Presymptomatic': 'yellow',
         'Asymptomatic': 'purple',
-        'Infected': 'red',
+        'Infectious': 'red',
         'Recovered': 'green',
     }
     if data:
         connections_str = data['connections']
         connection_lines = split_connections(connections_str)
-       
-        # Build the HTML Div output
-        return html.Div([
-            html.P([html.I(className="bi bi-calendar pe-1", style={"color": 'white', "margin-right": "5px"}), 
-                    f"Day: {data['day']}"]),
-            html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": 'white', "margin-right": "5px"}), 
-                    f"Node: {data['label'][4:]}"]),
-            html.P([html.I(className="bi bi-file-person-fill pe-1", style={"color": 'white', "margin-right": "5px"}), 
-                    f"Age: {data['age']}"]),    
-            html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get(data['status']), "margin-right": "5px"}), 
-                    f"Status: {data['status']}"]),
-            html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Susceptible'), "margin-right": "5px"}), 
-                    f"Probabilty to Susceptible State: {data['S']}"]), 
-            html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Presymptomatic'), "margin-right": "5px"}), 
-                    f"Probabilty to Presymptomatic State: {data['P']}"]),
-            html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Asymptomatic'), "margin-right": "5px"}), 
-                    f"Probabilty to Asymptomatic State: {data['A']}"]),
-            html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Infected'), "margin-right": "5px"}), 
-                    f"Probabilty to Infected State: {data['I']}"]),
-            html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Recovered'), "margin-right": "5px"}), 
-                    f"Probabilty to Recovered State: {data['R']}"]),
-            *[html.P(f"Connections: {line}", style={'word-wrap': 'break-word'}) if i == 0 else html.P(f"{line}", style={'word-wrap': 'break-word'}) 
-              for i, line in enumerate(connection_lines)]
-        ], style={'max-width': '100vh', 'font-size': '14px', 'margin-bottom': '15px'})
+        connectionsList = connections_str.split(', ')
+        if elements:
+            connectionsAgeList = []  # get list of age frequency
+            for element in elements:
+                if 'age' in element['data']:  # node data: {'data': {'id': '190', 'label': 'Node 190', 'status': 'Susceptible', 'age': '52', 'S': '1', 'P': '0', 'A': '0', 'I': '0', 'R': '0', 'day': 1, 'connections': '1'}}
+                    if element['data']['id'] in connectionsList:
+                        connectionsAgeList.append(int(element['data']['age']))
+            indiAgeFreqPlot = plotIndiConnAgeGroup(connectionsAgeList, data['id'])
+            # Build the HTML Div output
+            return html.Div([
+                html.P([html.I(className="bi bi-calendar pe-1", style={"color": 'white', "margin-right": "5px"}), 
+                        f"Day: {data['day']}"]),
+                html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": 'white', "margin-right": "5px"}), 
+                        f"Node: {data['label'][4:]}"]),
+                html.P([html.I(className="bi bi-file-person-fill pe-1", style={"color": 'white', "margin-right": "5px"}), 
+                        f"Age: {data['age']}"]),    
+                html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get(data['status']), "margin-right": "5px"}), 
+                        f"Status: {data['status']}"]),
+                html.P([html.I(className="fas fa-syringe", style={"color": 'white', "margin-right": "5px"}), 
+                        f"Vaccinated: {data['vaccinated']}"]),
+                html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Susceptible'), "margin-right": "5px"}), 
+                        f"Probabilty to Susceptible State: {data['S']}"]), 
+                html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Presymptomatic'), "margin-right": "5px"}), 
+                        f"Probabilty to Presymptomatic State: {data['P']}"]),
+                html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Asymptomatic'), "margin-right": "5px"}), 
+                        f"Probabilty to Asymptomatic State: {data['A']}"]),
+                html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Infectious'), "margin-right": "5px"}), 
+                        f"Probabilty to Infected State: {data['I']}"]),
+                html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Recovered'), "margin-right": "5px"}), 
+                        f"Probabilty to Recovered State: {data['R']}"]),
+                *[html.P(f"Connections: {line}", style={'word-wrap': 'break-word'}) if i == 0 else html.P(f"{line}", style={'word-wrap': 'break-word'}) 
+                for i, line in enumerate(connection_lines)]
+            ], style={'max-width': '100vh', 'font-size': '14px', 'margin-bottom': '15px'}), indiAgeFreqPlot 
 
-    return "Click a node in Network Exploration for details"
+    return "Click a node in Network Exploration for details", {'data': [],'layout': {'title': 'Graph Not Available'}}
 
 
 
@@ -558,7 +650,7 @@ def display_nodes_status(elements, day):
         'Susceptible': 'blue',
         'Presymptomatic': 'yellow',
         'Asymptomatic': 'purple',
-        'Infected': 'red',
+        'Infectious': 'red',
         'Recovered': 'green',
     }   
     if elements:
@@ -570,6 +662,8 @@ def display_nodes_status(elements, day):
         iList = []
         rList = []
         totalConnections = 0
+        vaccinatedCount = 0
+        unVaccinatedCount = 0
         count = 0
         # list of number of connections of nodes
         nodeConnectionsCount = []
@@ -582,10 +676,14 @@ def display_nodes_status(elements, day):
                     pList.append(element['data']['id'])
                 elif element['data']['status'] == 'Asymptomatic':
                     aList.append(element['data']['id'])
-                elif element['data']['status'] == 'Infected':
+                elif element['data']['status'] == 'Infectious':
                     iList.append(element['data']['id'])   
                 else:
                     rList.append(element['data']['id'])  
+                if element['data']['vaccinated'] == 'Yes':  
+                    vaccinatedCount += 1
+                else:
+                    unVaccinatedCount += 1
                 # number of connections a node have    
                 nodeConnectionsNum = len(element['data']['connections'].split(', ')) 
                 nodeConnectionsCount.append(nodeConnectionsNum)   
@@ -598,13 +696,17 @@ def display_nodes_status(elements, day):
         aList_lines = split_connections(', '.join(aList))
         iList_lines = split_connections(', '.join(iList))
         rList_lines = split_connections(', '.join(rList))
-         
+
         # Build the HTML Div outputbi 
         return html.Div([
             html.P([html.I(className="bi bi-people-fill pe-1", style={"color": "white", "margin-right": "5px"}),
                 f"Overall Population status for Day: {day}"]),
             html.P([html.I(className="bi bi-link pe-1", style={"color": "white", "margin-right": "5px"}),
                 f"Average Connections: {avgConnections}"]),  
+            html.P([html.I(className="fa-solid fa-syringe", style={"color": "white", "margin-right": "5px"}),
+                f"Vaccinated: {vaccinatedCount}"]),
+            html.P([html.I(className="bi bi-shield-x", style={"color": "white", "margin-right": "5px"}),
+                f"Unvaccinated: {unVaccinatedCount}"]),    
             html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Susceptible'), "margin-right": "5px"}),
                 f"Status: Susceptible"]), 
             *[html.P(f"Nodes: {line}") if i ==0 else html.P(f"{line}")  for i, line in enumerate(sList_lines)],
@@ -614,7 +716,7 @@ def display_nodes_status(elements, day):
             html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Asymptomatic'), "margin-right": "5px"}),
                 f"Status: Asymptomatic"]),
             *[html.P(f"Nodes: {line}") if i ==0 else html.P(f"{line}")  for i, line in enumerate(aList_lines)],
-            html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Infected'), "margin-right": "5px"}),
+            html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Infectious'), "margin-right": "5px"}),
                 f"Status: Infected"]),
             *[html.P(f"Nodes: {line}") if i ==0 else html.P(f"{line}")  for i, line in enumerate(iList_lines)],
             html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Recovered'), "margin-right": "5px"}),
@@ -634,7 +736,7 @@ def update_stylesheet(elements):
         'Susceptible': 'blue',
         'Presymptomatic': 'yellow',
         'Asymptomatic': 'purple',
-        'Infected': 'red',
+        'Infectious': 'red',
         'Recovered': 'green',
     }   
     stylesheet = [
@@ -713,7 +815,7 @@ def update_stylesheet2(elements):
         'Susceptible': 'blue',
         'Presymptomatic': 'yellow',
         'Asymptomatic': 'purple',
-        'Infected': 'red',
+        'Infectious': 'red',
         'Recovered': 'green',
     }   
     stylesheet = [
@@ -848,9 +950,10 @@ def update_graph(elements):
         }
     else:
         return countPlot
+    
 
 @app.callback(
-    Output('plotly-graph5', 'figure'),
+    Output('plotly-graph6', 'figure'),
     [Input('cytoscape', 'elements')]
 )
 def update_graph(elements):
@@ -860,7 +963,54 @@ def update_graph(elements):
         return plotDistributionSubPlot()
     else:
         return distributionSubPlot
-                   
+ 
+@app.callback(
+    [Output('popup-currGraph1', 'figure'),
+     Output('popup-currGraph2', 'figure'),
+     Output('popup-currGraph3', 'figure'),
+     Output('popup-currGraph4', 'figure'),
+     Output('popup-prevGraph1', 'figure'),
+     Output('popup-prevGraph2', 'figure'),
+     Output('popup-prevGraph3', 'figure'),
+     Output('popup-prevGraph4', 'figure')],
+    [Input('cytoscape', 'elements')]
+)
+def update_graph(elements):
+
+    # Load the figure from the JSON file using the correct function
+    plotJsonPathList = ['./data/currPlotResult.json','./data/currPlotAgeGroup.json','./data/currStackBar.json','./data/currPlotCountConnections.json','./data/prevPlotResult.json',
+                        'data/prevPlotAgeGroup.json','./data/prevStackBar.json','./data/prevPlotCountConnections.json']
+    currFig1 = currFig2 = currFig3 = currFig4 = prevFig1 = prevFig2 = prevFig3 = prevFig4 = None
+    
+    if os.path.exists(plotJsonPathList[0]):
+        currFig1 = pio.read_json(plotJsonPathList[0])
+    if os.path.exists(plotJsonPathList[1]):
+        currFig2 = pio.read_json(plotJsonPathList[1])
+    if os.path.exists(plotJsonPathList[2]):
+        currFig3 = pio.read_json(plotJsonPathList[2])
+    if os.path.exists(plotJsonPathList[3]):
+        currFig4 = pio.read_json(plotJsonPathList[3])
+    if os.path.exists(plotJsonPathList[4]):
+        prevFig1 = pio.read_json(plotJsonPathList[4])
+    if os.path.exists(plotJsonPathList[5]):
+        prevFig2 = pio.read_json(plotJsonPathList[5])
+    if os.path.exists(plotJsonPathList[6]):
+        prevFig3 = pio.read_json(plotJsonPathList[6])
+    if os.path.exists(plotJsonPathList[7]):
+        prevFig4 = pio.read_json(plotJsonPathList[7])
+
+    return (
+        currFig1 if currFig1 is not None else {'data': [], 'layout': {'title': 'Graph Not Available'}},
+        currFig2 if currFig2 is not None else {'data': [], 'layout': {'title': 'Graph Not Available'}},
+        currFig3 if currFig3 is not None else {'data': [], 'layout': {'title': 'Graph Not Available'}},
+        currFig4 if currFig4 is not None else {'data': [], 'layout': {'title': 'Graph Not Available'}},
+
+        prevFig1 if prevFig1 is not None else {'data': [], 'layout': {'title': 'Graph Not Available'}},
+        prevFig2 if prevFig2 is not None else {'data': [], 'layout': {'title': 'Graph Not Available'}},
+        prevFig3 if prevFig3 is not None else {'data': [], 'layout': {'title': 'Graph Not Available'}},
+        prevFig4 if prevFig4 is not None else {'data': [], 'layout': {'title': 'Graph Not Available'}},
+    )
+
 @app.callback(
     Output('cytoscape', 'layout'),
     [Input('reset-button', 'n_clicks')]
@@ -900,6 +1050,21 @@ def update_progress(n):
 def reset_file(file_path):
     with open(file_path, 'w') as f:
         f.write("0")  # Reset progress to 0
+
+def renameFile():
+    # Define the old and new paths (including the file name)
+    plotJsonPathList = ['./data/currPlotResult.json','./data/currPlotAgeGroup.json','./data/currStackBar.json','./data/currPlotCountConnections.json',
+                        './data/prevPlotResult.json','data/prevPlotAgeGroup.json','./data/prevStackBar.json','./data/prevPlotCountConnections.json']
+
+    # Check if the file exists before renaming
+    if os.path.exists(plotJsonPathList[0]):
+        shutil.copy2(plotJsonPathList[0], plotJsonPathList[4])
+    if os.path.exists(plotJsonPathList[1]):
+        shutil.copy2(plotJsonPathList[1], plotJsonPathList[5])
+    if os.path.exists(plotJsonPathList[2]):
+        shutil.copy2(plotJsonPathList[2], plotJsonPathList[6])
+    if os.path.exists(plotJsonPathList[3]):
+        shutil.copy2(plotJsonPathList[3], plotJsonPathList[7])
 
 
 @app.callback(
@@ -970,6 +1135,25 @@ def update_table(active_cell, table_data):
         return f'{column_id}: {value}'
     return "Click the table"
 
+# Callback to control the modal visibility and update button clicks
+@app.callback(
+    [Output('modal', 'style'),
+     Output('open-modal-btn', 'n_clicks'),
+     Output('close-modal-btn', 'n_clicks')],
+    [Input('open-modal-btn', 'n_clicks'), 
+     Input('close-modal-btn', 'n_clicks')],
+    [dash.dependencies.State('modal', 'style')]
+)
+def toggle_modal(open_clicks, close_clicks, current_style):
+    # Show the modal when open-modal-btn is clicked
+    if open_clicks > 0 and close_clicks == 0:
+        return {**current_style, 'display': 'flex'}, 0, 1  # Reset open button, set close button to 1
+
+    # Close the modal when close-modal-btn is clicked
+    if close_clicks > 0:
+        return {**current_style, 'display': 'none'}, 1, 0  # Reset close button, set open button to 1
+
+    return current_style, 0, 0  # Default case when no button is clicked
 
 if __name__ == '__main__':
     app.run_server(debug=False)
