@@ -1,4 +1,5 @@
 # Identifying Hidden Spreaders in COVID-19 Contact Networks  
+
 *A Network-Based Epidemiological Analysis Using a Modified SPAIR Model*  
 Based on the document on https://www.nature.com/articles/s41598-023-32542-3
 ---
@@ -139,3 +140,44 @@ Stores visualizations and analysis results:
 - `README.md`: Overview of the project, instructions, and repository structure.  
 
 
+## Getting Started
+
+These instructions will help you set up the project on your local machine.
+
+### Prerequisites
+- Install [Python](https://www.python.org/downloads/)
+- Ensure that an IDE is installed:
+  - Visual Studio Code (Recommended): Download [VS Code](https://code.visualstudio.com/Download)
+- Create [Groq Account](https://console.groq.com/login)
+  - Create [API Key](https://console.groq.com/keys)
+  - Create .env file in the main directory and copy over the API Key
+    ```
+    API_Key = xxxxxxxxxxxxx
+    ```     
+
+### Installation
+1. Download the Zip File
+2. Install dependencies:
+   ```python
+   pip install -r requirements.txt
+   ```
+3. If there is error during installing of dependencies: chromadb==0.5.0
+   - Go to this page: [https://visualstudio.microsoft.com/visual-cpp-build-tools/](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+   - Click on "Download Build Tools" and run what you downloaded
+   - Click on "Install" (a window with different options to click should show up)
+   - Click only on "Desktop Development with C++" and click on install 
+   - Reboot your system
+
+
+---
+
+## Usage
+
+Step 1: Run webApp.py
+```python
+python webApp.py
+```
+Step 2: Copy this to browser to access application
+```
+http://localhost:8080/
+```
