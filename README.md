@@ -146,15 +146,14 @@ Directory that stores additional files such as images, icons, or custom resource
  
 ### **`simulations/`**  
 Contains the core scripts for running the SPAIR model and generating results:  
-- `countryProportion.py`:  A Python script that calculates the proportion of different countries in a dataset, providing insights into global distributions or demographic breakdowns.
-- `DailyNetworks.py`:  This script generates or analyzes daily network data, likely involving dynamic connections or interactions between entities on a daily basis. Useful for simulating or tracking temporal networks.
-- `DashApp.py`: A web application built with the Dash framework for creating interactive visualizations and dashboards. This app likely displays real-time or simulated data, offering users an intuitive interface for data exploration.
-- `EpidemicSimDoc.pdf`: A comprehensive document outlining the methodology, assumptions, and results of an epidemic simulation model. It serves as documentation for the simulation, explaining the parameters and setup used in the study.
-- `GenerateConnectionsCsv.py`: A Python script that generates a CSV file containing network connections or interactions between nodes. It is typically used to create input data for network analysis or simulations.  
-- `generateTable.py`: A script that generates tables of data, possibly in tabular form (like CSV, Excel, or HTML), based on certain parameters or network characteristics. It helps organize and present data in an accessible format.
-- `Network.py`: A Python module that defines the structure and functions for managing and analyzing networks. It includes the creation, modification, and traversal of nodes and edges in a network, likely supporting graph-based operations.
-- `Node.py`: A Python class or module representing nodes within a network. It defines properties, behaviors, and interactions of the nodes, which could include attributes like ID, connections, and state.
-- `plotGraph.py`: A script for visualizing network data, likely plotting graphs to represent nodes and their connections. It may use libraries like Matplotlib or NetworkX to generate graphical representations of networks or epidemic spread.
+- `countryProportion.py`: A Python script that retrieve proportion of different countries from `population-by-five-year-age-group.csv`, returning distribution of age group using the proportion.
+- `DailyNetworks.py`: A Python class representing networks throughout the day.
+- `DashApp.py`: A web application built with the Dash framework for creating interactive visualizations and dashboards. 
+- `GenerateConnectionsCsv.py`: A Python script that generates a CSV file containing network connections for simulations.  
+- `generateTable.py`: A script that generates tables of data that will be displayed on `DashApp.py`.
+- `Network.py`: A Python class representing network of a single day.
+- `Node.py`: A Python class or module representing nodes within a network.
+- `plotGraph.py`: A script for visualizing network data, to plot graphs to be displayed on `DashApp.py`.
 - `requirements.txt`: A text file listing the external Python packages and dependencies needed to run the project. It ensures that the correct versions of libraries are installed using pip install -r
 - `SPAIR.py`: The main script for simulating disease spread using the modified SPAIR model. It includes probabilistic state transitions and supports various network types.  
 
