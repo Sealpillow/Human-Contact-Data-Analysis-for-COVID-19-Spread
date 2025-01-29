@@ -1,12 +1,12 @@
 # Identifying Hidden Spreaders in COVID-19 Contact Networks  
 
-*A Network-Based Epidemiological Analysis Using a Modified SPAIR Model*  
-Based on the document on https://www.nature.com/articles/s41598-023-32542-3
+**A Network-Based Epidemiological Analysis Using a Modified SPAIR Model**  
+
 ---
 
 ## 📌 Overview  
-This repository presents a computational framework to identify **hidden spreaders**—asymptomatic, or highly connected individuals driving COVID-19 transmission—by analyzing human contact networks. </br>
-The study leverages a modified **SPAIR model** (Susceptible, Presymptomatic, Asymptomatic, Infectious, Recovered) and synthetic contact networks to simulate disease dynamics under diverse scenarios, including:  
+This repository presents a computational framework to identify **hidden spreaders**—asymptomatic, or highly connected individuals driving COVID-19 transmission—by analyzing human contact networks. 
+Building on [previous research](https://www.nature.com/articles/s41598-023-32542-3), the study utilizes a modified SPAIR model (Susceptible, Presymptomatic, Asymptomatic, Infectious, Recovered) along with synthetic contact networks to simulate disease dynamics across various scenarios, including:
 - **Network types**: Static (fixed connections), Dynamic (daily-changing interactions), Age-structured (demographic clustering).  
 - **Interventions**: Vaccination, isolation, and demographic targeting.  
 - **Key parameters**: Age distribution, vaccination rate, isolation timing, and population size.  
