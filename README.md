@@ -5,10 +5,6 @@ Based on the document on https://www.nature.com/articles/s41598-023-32542-3
 
 # Identifying Hidden Spreaders in COVID-19 Contact Networks  
 *A Network-Based Epidemiological Analysis Using a Modified SPAIR Model*  
-
-![Contact Network Visualization](https://via.placeholder.com/800x400.png?text=Contact+Network+Heatmap)  
-*Example of an age-structured contact network heatmap used in simulations.*
-
 ---
 
 ## 📌 Overview  
@@ -28,6 +24,7 @@ This repository presents a computational framework to identify **hidden spreader
    - Evaluates how timing (early vs. delayed) and coverage (1–10% daily vaccination) impact outbreak trajectories.  
 
 ---
+
 
 ## 🧬 Model Dynamics  
 ### Key Equations & Parameters  
@@ -62,14 +59,20 @@ To identify hidden spreaders, we introduce a **network-based probabilistic appro
 - Each node (individual) has a probability of **changing states** based on infection likelihood, recovery rates, and external interventions (e.g., vaccination, isolation).  
 - Using known infected individuals, we estimate **hidden spreaders** by analyzing **indirect transmission pathways** in the network.  
 
-#### **1. Infection Probability**  
-The probability that a **susceptible** individual (\( S \)) becomes **presymptomatic** (\( P \)) due to contact with an infectious neighbor (\( j \)) is given by:  
-\[
-P_{SP}(t) = 1 - e^{-\lambda C_j(t)}
-\]  
-where:  
-- \( \lambda \) = Transmission rate per contact.  
-- \( C_j(t) \) = Number of effective contacts at time \( t \).  
+#### **1. Transition Supporting Formula**  
+$P_i(t)$ - Probability that an individual is in Presymtomatic state </br>
+$I_i(t)$ - Probability that an individual is in Infectious state  </br>
+$A_i(t)$ - Probability that an individual is in Asymtomatic state </br>
+
+| Description | Formula |
+|------------|-------------|
+| Infected Probability | $C_i(t) = P_i(t) + I_i(t) + A_i(t)$ |
+| Infection Probability To A Single Neighbou | $F(t, j, \beta) = C_j(t) \cdot \beta$ |
+| Probability Of Not Infected By All Neighbour | $\prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right)$ |
+| Probability Of Infected By Any Neighbour | $1 - \prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right)$   |
+| Transmission probability | $\beta = \frac{R_0}{\lambda(k)}$ |
+| Average time a susceptible person carries the virus | $\lambda = p \cdot \mu_A + (1 - p) \cdot \left( \exp\left( \mu_p + \frac{\sigma_p^2}{2} \right) + \mu_I \right)$ |
+
 
 #### **2. Transition Probabilities**  
 Each infected individual progresses through different states with assigned probabilities:  
@@ -102,7 +105,6 @@ P_{\text{transmit, isolated}} = (1 - \delta) P_{\text{transmit, active}}
 \]  
 where \( \delta \) represents isolation effectiveness.  
 
----
 ---
 
 ## 📊 Key Findings  
