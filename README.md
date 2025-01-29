@@ -74,24 +74,19 @@ where:
 - λ is the average time a susceptible person carries the virus
 - FP(d), FI(d), and FA(d) are the cumulative distribution functions of the duration length d for the respective states.
 - $∂_i$ represents the set of neighbors of i in the network, and F(t,j,β) is the probability that i is infected by j on day t.
-- $ \mu_A , \exp \left( \mu_p + \frac{\sigma_p^2}{2} \right) , \mu_I$ are the average time of the virus carried by infected individuals in A, P and I states respectively
+- $ \mu_A $, $ \exp \left( \mu_p + \frac{\sigma_p^2}{2} \right) $, $ \mu_I $ are the average time of the virus carried by infected individuals in A, P, and I states respectively.
 
 
 #### **3. Vaccination Impact**  
 Vaccination modifies an individual’s susceptibility and reduces overall network transmission:  
-\[
-R_0^{\text{eff}} = R_0 (1 - v e)
-\]  
-where:  
-- \( v \) = Fraction of vaccinated individuals.  
-- \( e \) = Vaccine efficacy.  
+$R_0 = R_0 \ (1 - \text{Vaccination Effectiveness})$
 
 #### **4. Isolation Effects**  
 Isolation removes infected individuals from the network, reducing effective transmission:  
-\[
-P_{\text{transmit, isolated}} = (1 - \delta) P_{\text{transmit, active}}
-\]  
-where \( \delta \) represents isolation effectiveness.  
+
+#### **5. Age-Based Connection Network **  
+Individual Connections are generated based age group connections
+![image](https://github.com/user-attachments/assets/4fb53da0-7cdd-4a97-8555-20005b8393ff)
 
 ---
 
