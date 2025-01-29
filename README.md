@@ -24,33 +24,6 @@ This repository presents a computational framework to identify **hidden spreader
    - Evaluates how timing (early vs. delayed) and coverage (1–10% daily vaccination) impact outbreak trajectories.  
 
 ---
-
-
-## 🧬 Model Dynamics  
-### Key Equations & Parameters  
-- **Infection Probability**:  
-  \[
-  F(t,j,\beta) = C_j(t) \cdot \beta \quad \text{(Transmission probability from neighbor \( j \))}
-  \]  
-- **Vaccination Impact**:  
-  Adjusted reproduction number (\( R_0 \)) based on vaccination rate and efficacy.  
-- **Isolation**: Reduces transmission probability for infected individuals.  
-
-| Parameter       | Description                          | Value/Range      |  
-|-----------------|--------------------------------------|------------------|  
-| \( R_0 \)       | Basic reproduction number           | 3.5 (baseline)   |  
-| \( p \)         | Asymptomatic fraction               | 15%              |  
-| Vaccination rate| Daily immunization coverage         | 1–10% of population |  
-| Intervention day| Start day for vaccination/isolation | 15–30 (post-outbreak)|  
-
-Here’s the refined **Model Dynamics** section with transition probabilities explicitly included:  
-
----
-
-2. **Proposed Method**:
-   - A theoretical framework is introduced, leveraging transition probabilities among different infectious states in a contact network.
-   - This method uses a Markovian process to estimate the probability of each node (individual) being infected, based on known infected cases and network topology.
-
 ## 🧬 Model Dynamics  
 ### Key Equations & Parameters  
 To identify hidden spreaders, we introduce a **network-based probabilistic approach** that models transitions between infectious states using **transition probabilities** and **network topology**.  
@@ -59,13 +32,20 @@ To identify hidden spreaders, we introduce a **network-based probabilistic appro
 - Each node (individual) has a probability of **changing states** based on infection likelihood, recovery rates, and external interventions (e.g., vaccination, isolation).  
 - Using known infected individuals, we estimate **hidden spreaders** by analyzing **indirect transmission pathways** in the network.  
 
+| Parameter       | Description                          | Value/Range      |  
+|:---------------:|:----------------------------------:|:------------------:|  
+|$R_0$| Basic reproduction number           | 3.5 (baseline)   |  
+| $p$          | Asymptomatic fraction               | 15%              |  
+| Vaccination rate| Daily immunization coverage         | 1–10% of population |  
+| Intervention day| Start day for vaccination/isolation | 15–30 (post-outbreak)|  
+
 #### **1. Transition Supporting Formula**  
 $P_i(t)$ - Probability that an individual is in Presymtomatic state </br>
 $I_i(t)$ - Probability that an individual is in Infectious state  </br>
 $A_i(t)$ - Probability that an individual is in Asymtomatic state </br>
 
 | Description | Formula |
-|------------|-------------|
+|:------------:|:-------------:|
 | Infected Probability | $C_i(t) = P_i(t) + I_i(t) + A_i(t)$ |
 | Infection Probability To A Single Neighbou | $F(t, j, \beta) = C_j(t) \cdot \beta$ |
 | Probability Of Not Infected By All Neighbour | $\prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right)$ |
@@ -78,7 +58,7 @@ $A_i(t)$ - Probability that an individual is in Asymtomatic state </br>
 Each infected individual progresses through different states with assigned probabilities:  
 
 | Transition | Description | Probability |
-|------------|------------|-------------|
+|:------------:|:------------:|:-------------:|
 | S → P | Susceptible to Presymptomatic | $P_i(t+1) = S_i(t) \cdot (1 - p) \cdot \left( 1 - \prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right) \right)$ |
 | S → A | Susceptible to Asymptomatic | $A_i(t+1) = S_i(t) \cdot p \cdot \left( 1 - \prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right) \right)$ |
 | S → S | Remain Susceptible | $S_i(t+1) = 1 - P_i(t+1)- A_i(t+1)$ |
@@ -90,8 +70,11 @@ Each infected individual progresses through different states with assigned proba
 | A → A | Remain Infectious | $A_i(t+1) = 1 - R_i(t+1)$ |
 
 where:  
-- \( P_{PI} + P_A = 1 \) (infected individuals either develop symptoms or remain asymptomatic).  
-- \( \gamma, \gamma_A \) = Recovery rates for symptomatic and asymptomatic individuals, respectively.  
+- k is the average number of neighbors in the contact tracing network
+- λ is the average time a susceptible person carries the virus
+- FP(d), FI(d), and FA(d) are the cumulative distribution functions of the duration length d for the respective states.
+- $∂_i$ represents the set of neighbors of i in the network, and F(t,j,β) is the probability that i is infected by j on day t.
+- $ \mu_A , \exp \left( \mu_p + \frac{\sigma_p^2}{2} \right) , \mu_I$ are the average time of the virus carried by infected individuals in A, P and I states respectively
 
 
 #### **3. Vaccination Impact**  
