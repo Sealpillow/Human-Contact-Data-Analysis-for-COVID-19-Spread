@@ -119,20 +119,24 @@ This repository is organized into the following folders and files:
 
 ### **`data/`**  
 Contains synthetic contact network datasets used in the simulations. These networks are generated based on real-world demographic data and include and Stores visualizations figures and analysis results: 
-- `currinfectionRate.json`: Analysis of infection peaks and their timing under varying intervention strategies.  
-- `currPlotAgeGroup.json`: 
-- `currPlotCountConnections.json`: 
-- `currPlotResult.json`: Recent simulation result showing the progression of infections over time under different scenarios.     
-- `currStackBar.json`: 
-- `factors.csv`: 
-- `population-by-five-year-age-group.csv`: 
-- `previnfectionRate.json`:  
-- `prevPlotAgeGroup.json`: 
-- `prevPlotCountConnections.json`: 
-- `prevPlotResult.json`: Previous simulation result showing the progression of infections over time under different scenarios.  
-- `prevStackBar.json`: 
-- `status.json`: 
-- `infectious.csv`: 
+Sure! Here are some possible descriptions for the remaining files:
+
+- `currPlotAgeGroup.json`: Current simulation to show infection rates throughout the whole period.
+- `currPlotAgeGroup.json`: Current simulation to show the distribution of age group in the population in pie chart.
+- `currPlotCountConnections.json`: Current simulation histogram to show the distribution of connections within the population.
+- `currPlotResult.json`: Current simulation multi line chart to show the progression of infections over time under different scenarios.
+- `currStackBar.json`: Current simulation percentage stack bar chart to show the distribution of SPAIR status within the population.
+- `factors.csv`: Contain information on vaccination impact factors and contact patterns for different age groups.
+- `population-by-five-year-age-group.csv`: A demographic dataset that categorizes the population by five-year age group containing different countries and years.
+- `previnfectionRate.json`: Previous simulation to show infection rates throughout the whole period.
+- `prevPlotAgeGroup.json`: Previous simulation to show the distribution of age group in the population in pie chart.
+- `prevPlotCountConnections.json`: Previous simulation histogram to show the distribution of connections within the population.
+- `prevPlotResult.json`: Previous simulation multi line chart to show the progression of infections over time under different scenarios.
+- `prevStackBar.json`: Previous simulation percentage stack bar chart to show the distribution of SPAIR status within the population.
+- `status.json`: A json file to store value of progress and parameters used current and previously
+- `infectious.csv`: A dataset containing connection between two individuals on a specific day, including their respective ages..
+
+Let me know if you'd like any further elaboration or adjustments!
 
 
 ### **`assets/`**
