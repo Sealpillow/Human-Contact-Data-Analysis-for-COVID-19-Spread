@@ -105,6 +105,8 @@ app.layout = html.Div([
                     id='error-popup',
                     displayed=False  # Initially hidden
                 ),
+                html.P([f"Age Group Composition Adjustment",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "10px"},title="Country Selection for Age Group Composition Adjustment")]),
+
                 dcc.Dropdown(
                     sorted(['Singapore', 'Japan', 'United States','New Zealand','Australia']),
                     id='dropdown-1',
