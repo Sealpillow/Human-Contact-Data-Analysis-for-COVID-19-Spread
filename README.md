@@ -122,17 +122,17 @@ Contains synthetic contact network datasets used in the simulations. These netwo
 - `currinfectionRate.json`: Analysis of infection peaks and their timing under varying intervention strategies.  
 - `currPlotAgeGroup.json`: 
 - `currPlotCountConnections.json`: 
-- `currPlotResult.json`: Graphs showing the progression of infections over time under different scenarios.     
+- `currPlotResult.json`: Recent simulation result showing the progression of infections over time under different scenarios.     
 - `currStackBar.json`: 
 - `factors.csv`: 
 - `population-by-five-year-age-group.csv`: 
 - `previnfectionRate.json`:  
 - `prevPlotAgeGroup.json`: 
 - `prevPlotCountConnections.json`: 
-- `prevPlotResult.json`: .  
+- `prevPlotResult.json`: Previous simulation result showing the progression of infections over time under different scenarios.  
 - `prevStackBar.json`: 
 - `status.json`: 
-- `infectious.csv`: An age-structured contact network where interactions are clustered by demographic groups (e.g., age 0–25, 25–44, etc.).
+- `infectious.csv`: 
 
 
 ### **`assets/`**
@@ -142,17 +142,17 @@ Directory that stores additional files such as images, icons, or custom resource
  
 ### **`simulations/`**  
 Contains the core scripts for running the SPAIR model and generating results:  
-- `countryProportion.py`: The main script for simulating disease spread using the modified SPAIR model. It includes probabilistic state transitions and supports various network types.  
-- `DailyNetworks.py`: A script for generating synthetic contact networks based on user-defined parameters (e.g., population size, age distribution).  
-- `DashApp.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
-- `EpidemicSimDoc.pdf`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
-- `GenerateConnectionsCsv.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
-- `generateTable.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
-- `Network.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
-- `Node.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
-- `plotGraph.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
-- `requirements.txt`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
-- `SPAIR.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
+- `countryProportion.py`: 
+- `DailyNetworks.py`: 
+- `DashApp.py`:
+- `EpidemicSimDoc.pdf`:   
+- `GenerateConnectionsCsv.py`:  
+- `generateTable.py`: 
+- `Network.py`: 
+- `Node.py`: 
+- `plotGraph.py`: 
+- `requirements.txt`: 
+- `SPAIR.py`: The main script for simulating disease spread using the modified SPAIR model. It includes probabilistic state transitions and supports various network types.  
 
 
 ## Getting Started
