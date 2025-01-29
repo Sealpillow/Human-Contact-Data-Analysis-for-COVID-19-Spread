@@ -210,3 +210,8 @@ Step 9: Scroll futher down and you can see more information on the status of the
 Step 10: Observe the SPAIR Infection model Prediction Result </br>
 ![newplot (17)](https://github.com/user-attachments/assets/bd133f0b-1ec4-412e-aa79-6e0c2641f09b)
 
+Step 11: To Compare Different parameter result. Click the 'Compare Previous' Button. </br>
+A Popup window with graph will be open to compare the results </br>
+![image](https://github.com/user-attachments/assets/7e94a9b3-853d-487c-a69c-f3923ab468dc)
+
+
