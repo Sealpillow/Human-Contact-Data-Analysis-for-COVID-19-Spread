@@ -67,7 +67,7 @@ app.layout = html.Div([
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),  
 
                 html.P([f"Population",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Size of population")]),
-                dcc.Input(id='population-input', type='number', value=1000, min = 150, placeholder='Enter population', className='dcc.Input',
+                dcc.Input(id='population-input', type='number', value=150, min = 150, placeholder='Enter population', className='dcc.Input',
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
                 html.P([f"Days",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Number of simulation days")]),
@@ -164,10 +164,10 @@ app.layout = html.Div([
 
                 html.Div(id='output-div', style={'margin-top': '15px', 'color': 'white'}),
 
-                html.P("*Only applies when re-generated"),
+                html.P("*Only applies when re-generated", style={'margin-bottom': '5px'}),
                 dcc.Checklist(id='checkbox-list',
                               options=[{'label': ' Remove Non-Selected Node Connections', 'value': 'removeOthers'},
-                                       {'label': ' Isolate Node in Infected state*', 'value': 'isolate'},
+                                       {'label': ' Isolate Node in Infectious state*', 'value': 'isolate'},
                                        {'label': ' Include Age factor*', 'value': 'age'},
                                        {'label': ' Include Vaccination factor*', 'value': 'vaccination'}],
                               value=['age'],
@@ -193,7 +193,7 @@ app.layout = html.Div([
                 html.P("S (Susceptible): People who can catch the disease."),
                 html.P("P (Presymptomatic): People who have been infected but aren't showing symptoms yet."),
                 html.P("A (Asymptomatic): People who are infected but never show symptoms."),
-                html.P("I (Infectious/Symptomatic): People who are infected and can spread the disease."),
+                html.P("I (Infectious): People who are infected and can spread the disease."),
                 html.P("R (Recovered): People who had the disease and are now immune or no longer infectious."),
                 html.P("Nodes having < 5 connections will have inner connections")
                 
@@ -1950,6 +1950,6 @@ def toggle_modal(open_clicks, close_clicks, current_style):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
     #print("url: http://localhost:8080/")
     #serve(app.server, host='0.0.0.0', port=8080, threads=7)
