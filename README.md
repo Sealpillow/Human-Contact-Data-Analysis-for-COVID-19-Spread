@@ -185,8 +185,7 @@ Step 2: Copy this to browser to access application
 http://127.0.0.1:8050/
 ```
 Step 3: Select desired parameters and click generate </br>
-
-<img src="https://github.com/user-attachments/assets/50e4c25e-2ab9-4b2b-9a9d-5955e7d3cca3" alt="image" width="250"/> </br>
+<img src="https://github.com/user-attachments/assets/b1aec26d-9f41-4b88-82aa-660b44341562" alt="image" width="250"/> </br>
 
 Step 4: Wait for the network to be generated </br>
 ![Recording2025-01-30002658-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/082119ae-e8c8-4f8c-8330-e9bcb7ee0aa3)
@@ -212,6 +211,7 @@ Step 10: Observe the SPAIR Infection model Prediction Result </br>
 
 Step 11: To Compare Different parameter result. Click the 'Compare Previous' Button. </br>
 A Popup window with graph will be open to compare the results </br>
-![image](https://github.com/user-attachments/assets/7e94a9b3-853d-487c-a69c-f3923ab468dc)
+![image](https://github.com/user-attachments/assets/88f193da-c70f-4821-8b4a-47e99690cfc5)
+
 
 
