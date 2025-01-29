@@ -82,11 +82,11 @@ Each infected individual progresses through different states with assigned proba
 | S → P | Susceptible to Presymptomatic | $P_i(t+1) = S_i(t) \cdot (1 - p) \cdot \left( 1 - \prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right) \right)$ |
 | S → A | Susceptible to Asymptomatic | $A_i(t+1) = S_i(t) \cdot p \cdot \left( 1 - \prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right) \right)$ |
 | S → S | Remain Susceptible | $S_i(t+1) = 1 - P_i(t+1)- A_i(t+1)$ |
-| P → I | Presymptomatic to Infectious | $I_i(t+1) = \sum_{d=1}^{\infty} P_i \cdot \left( \frac{F_P(d) - F_P(d-1)}{1 - F_P(d-1)} \right)$ |
+| P → I | Presymptomatic to Infectious | $I_i(t+1) = \sum\limits_{d=1}^{\infty} P_i \cdot \left( \frac{F_P(d) - F_P(d-1)}{1 - F_P(d-1)} \right)$ |
 | P → P | Remain Presymptomatic | $P_i(t+1) = 1 - I_i(t+1)$ |
-| I → R | Infectious to Recovered | $R_i(t+1) = R_i(t) + \sum_{d=1}^{\infty} I_i \cdot \left( \frac{F_I(d) - F_I(d-1)}{1 - F_I(d-1)} \right)$ |
+| I → R | Infectious to Recovered | $R_i(t+1) = R_i(t) + \sum\limits_{d=1}^{\infty} I_i \cdot \left( \frac{F_I(d) - F_I(d-1)}{1 - F_I(d-1)} \right)$ |
 | I → I | Remain Infectious | $I_i(t+1) = 1 - R_i(t+1)$ |
-| A → R | Infectious to Recovered | $R_i(t+1) = R_i(t) + \sum_{d=1}^{\infty} A_i \cdot \left( \frac{F_A(d) - F_A(d-1)}{1 - F_A(d-1)} \right)$ |
+| A → R | Infectious to Recovered | $R_i(t+1) = R_i(t) + \sum\limits_{d=1}^{\infty} A_i \cdot \left( \frac{F_A(d) - F_A(d-1)}{1 - F_A(d-1)} \right)$ |
 | A → A | Remain Infectious | $A_i(t+1) = 1 - R_i(t+1)$ |
 
 where:  
