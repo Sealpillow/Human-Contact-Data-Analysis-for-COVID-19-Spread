@@ -118,26 +118,41 @@ when Age Factor is not considered, connection is assigned using normal distribut
 This repository is organized into the following folders and files:  
 
 ### **`data/`**  
-Contains synthetic contact network datasets used in the simulations. These networks are generated based on real-world demographic data and include:  
-- `static_network.csv`: A fixed contact network where connections remain constant throughout the simulation.  
-- `dynamic_network.csv`: A dynamic contact network where connections change daily, reflecting real-world variability in human interactions.  
-- `age_network.csv`: An age-structured contact network where interactions are clustered by demographic groups (e.g., age 0–25, 25–44, etc.).  
+Contains synthetic contact network datasets used in the simulations. These networks are generated based on real-world demographic data and include and Stores visualizations figures and analysis results: 
+- `currinfectionRate.json`: Analysis of infection peaks and their timing under varying intervention strategies.  
+- `currPlotAgeGroup.json`: 
+- `currPlotCountConnections.json`: 
+- `currPlotResult.json`: Graphs showing the progression of infections over time under different scenarios.     
+- `currStackBar.json`: 
+- `factors.csv`: 
+- `population-by-five-year-age-group.csv`: 
+- `previnfectionRate.json`:  
+- `prevPlotAgeGroup.json`: 
+- `prevPlotCountConnections.json`: 
+- `prevPlotResult.json`: .  
+- `prevStackBar.json`: 
+- `status.json`: 
+- `infectious.csv`: An age-structured contact network where interactions are clustered by demographic groups (e.g., age 0–25, 25–44, etc.).
 
+
+### **`assets/`**
+Directory that stores additional files such as images, icons, or custom resources that is used in the dashboards.
+
+- `style.css`: An age-structured contact network where interactions are clustered by demographic groups (e.g., age 0–25, 25–44, etc.).  
+ 
 ### **`simulations/`**  
 Contains the core scripts for running the SPAIR model and generating results:  
-- `spair_model.py`: The main script for simulating disease spread using the modified SPAIR model. It includes probabilistic state transitions and supports various network types.  
-- `network_generator.py`: A script for generating synthetic contact networks based on user-defined parameters (e.g., population size, age distribution).  
-- `intervention.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
-
-### **`figures/`**  
-Stores visualizations and analysis results:  
-- `infection_curves/`: Graphs showing the progression of infections over time under different scenarios.  
-- `heatmaps/`: Heatmaps visualizing contact frequencies between age groups.  
-- `peak_analysis/`: Analysis of infection peaks and their timing under varying intervention strategies.  
-
-### **Other Files**  
-- `LICENSE`: The license file for the project (MIT License).  
-- `README.md`: Overview of the project, instructions, and repository structure.  
+- `countryProportion.py`: The main script for simulating disease spread using the modified SPAIR model. It includes probabilistic state transitions and supports various network types.  
+- `DailyNetworks.py`: A script for generating synthetic contact networks based on user-defined parameters (e.g., population size, age distribution).  
+- `DashApp.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
+- `EpidemicSimDoc.pdf`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
+- `GenerateConnectionsCsv.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
+- `generateTable.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
+- `Network.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
+- `Node.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
+- `plotGraph.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
+- `requirements.txt`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
+- `SPAIR.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
 
 
 ## Getting Started
@@ -147,13 +162,7 @@ These instructions will help you set up the project on your local machine.
 ### Prerequisites
 - Install [Python](https://www.python.org/downloads/)
 - Ensure that an IDE is installed:
-  - Visual Studio Code (Recommended): Download [VS Code](https://code.visualstudio.com/Download)
-- Create [Groq Account](https://console.groq.com/login)
-  - Create [API Key](https://console.groq.com/keys)
-  - Create .env file in the main directory and copy over the API Key
-    ```
-    API_Key = xxxxxxxxxxxxx
-    ```     
+  - Visual Studio Code (Recommended): Download [VS Code](https://code.visualstudio.com/Download)  
 
 ### Installation
 1. Download the Zip File
@@ -161,23 +170,14 @@ These instructions will help you set up the project on your local machine.
    ```python
    pip install -r requirements.txt
    ```
-3. If there is error during installing of dependencies: chromadb==0.5.0
-   - Go to this page: [https://visualstudio.microsoft.com/visual-cpp-build-tools/](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
-   - Click on "Download Build Tools" and run what you downloaded
-   - Click on "Install" (a window with different options to click should show up)
-   - Click only on "Desktop Development with C++" and click on install 
-   - Reboot your system
-
-
 ---
-
 ## Usage
 
-Step 1: Run webApp.py
+Step 1: Run DashApp.py
 ```python
-python webApp.py
+python DashApp.py
 ```
 Step 2: Copy this to browser to access application
 ```
-http://localhost:8080/
+http://127.0.0.1:8050/
 ```
