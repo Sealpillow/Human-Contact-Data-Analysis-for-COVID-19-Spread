@@ -5,6 +5,20 @@ import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def generate_contact_matrix_table():
+    """
+    Generates a contact matrix table for age group interactions based on predefined contact data.
+
+    This function constructs a contact matrix table from a predefined set of contact data, which represents the 
+    frequency of interactions between individuals from different age groups. The contact data is normalized into 
+    probabilities and then converted to percentages. The resulting data is displayed in a Dash DataTable, with 
+    each cell showing the percentage of interactions between age groups.
+
+    The matrix is represented in a DataFrame with age groups as both rows and columns, and the values are displayed 
+    as percentages. Additionally, the table includes hover effects for better interactivity.
+
+    Returns:
+    - dash_table.DataTable: A Dash table component displaying the contact matrix with age groups as rows and columns.
+    """
     # Example contact matrix data
     M_full = np.array([
     [19.2, 4.8, 3.0, 7.1, 3.7, 3.1, 2.3, 1.4, 1.4],
@@ -53,6 +67,23 @@ def generate_contact_matrix_table():
 
 
 def generate_vaccination_impact_contact_patterns_table():
+    """
+    Generates a table displaying the impact of vaccination on contact patterns based on age groups.
+
+    This function reads a CSV file containing vaccination impact factors and contact patterns for different age groups. 
+    The CSV file includes the following columns:
+    - 'Mean Contacts': The average number of contacts in a given time period.
+    - 'Standard Deviation': The standard deviation of the contact numbers.
+    - '1-14 days after first dose (95% CI)': The 95% confidence interval for contact patterns between 1-14 days after the first dose.
+    - '15-28 days after first dose (95% CI)': The 95% confidence interval for contact patterns between 15-28 days after the first dose.
+
+    The function reads the data from a CSV file located in the `data` directory, then generates a Dash DataTable 
+    to display this information. The table includes interactive features such as hover effects to highlight the cells when they are active.
+
+    Returns:
+    - dash_table.DataTable: A Dash table component displaying the vaccination impact and contact pattern data, 
+      with hover effects to enhance user interaction.
+    """
     factors_path = os.path.join(current_dir, "./data/factors.csv")
     df = pd.read_csv(factors_path)
     return dash_table.DataTable(

@@ -36,7 +36,7 @@ def plotResult(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts
     # plotly
     statusColourMap = {
         'Susceptible': 'blue',
-        'Presymptomatic': 'yellow',
+        'Presymptomatic': 'gold',
         'Asymptomatic': 'purple',
         'Infectious': 'red',
         'Recovered': 'green',
@@ -49,17 +49,18 @@ def plotResult(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts
         'Recovered': recovered_counts
     }
 
-    # Create a list of traces
+    # Define the order for the plot (e.g., you want 'Infectious' to be plotted last)
+    ordered_labels = ['Susceptible','Recovered', 'Infectious','Asymptomatic','Presymptomatic']  # Custom order
+
+    # Create a list of traces in the desired order
     traces = []
-    for label, counts in data.items():
+    for label in ordered_labels:
+        counts = data[label]
         trace = go.Scatter(
-            x=list(range(1, days + 1)), 
-            y=counts, 
-            mode='lines+text', 
+            x=list(range(1, days + 1)),
+            y=counts,
+            mode='lines+text',
             name=label,
-            #text=counts,
-            #textposition='top right',
-            #textfont=dict(size=8),
             line=dict(color=statusColourMap.get(label, 'black'))
         )
         traces.append(trace)
@@ -69,16 +70,73 @@ def plotResult(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts
 
     # Add labels and title
     fig.update_layout(
-        xaxis=dict(range=[1, days+1],dtick = 10),
+        xaxis=dict(range=[1, days+1], dtick=10),
         xaxis_title='Days',
         yaxis_title='Population',
         legend_title='Legend',
-        title_text= "SPAIR Model Prediction"
+        title_text="SPAIR Model Prediction",
+        font=dict(size=16)
     )
     fig.write_json('./data/currPlotResult.json')
     # Show the figure
     #fig.show()
     return fig   
+
+
+def plotInfectionRate(days, susceptible_counts):
+    # plotly color map for susceptible decrease rate
+    statusColourMap = {
+        'Infection Rate': 'darkred',
+    }
+
+    # Calculate the rate of decrease in susceptible counts
+    susceptible_decrease_rate = [0] + [susceptible_counts[i - 1] - susceptible_counts[i] for i in range(1, len(susceptible_counts))]  # Decrease in susceptible population
+    susceptible_decrease_rate_per_susceptible = [round(rate / susceptible_counts[i - 1]*100,2) if susceptible_counts[i - 1] > 0 else 0 for i, rate in enumerate(susceptible_decrease_rate)][1:]  # Avoid division by 0 and skip first day
+    #overallInfectionRate = round(sum(susceptible_decrease_rate_per_susceptible)/len(susceptible_decrease_rate_per_susceptible),2)
+    overallInfectionRate = round((susceptible_counts[0]-susceptible_counts[-1])/susceptible_counts[0]*100,2)
+    # Find the peak of susceptible decrease rate
+    peak_day = susceptible_decrease_rate_per_susceptible.index(max(susceptible_decrease_rate_per_susceptible)) + 2  # +2 to adjust for starting from day 2
+    peak_value = max(susceptible_decrease_rate_per_susceptible)
+
+    # Create the plot for susceptible decrease rate
+    susceptible_decrease_trace = go.Scatter(
+        x=list(range(2, days + 1)),  # Start from day 2 since first day doesn't have a decrease
+        y=susceptible_decrease_rate_per_susceptible,
+        mode='lines+text',
+        name="Infection Rate",
+        line=dict(color=statusColourMap.get('Infection Rate', 'blue'))  # Dashed line for decrease rate
+    )
+
+    # Create a marker for the peak
+    peak_marker = go.Scatter(
+        x=[peak_day],
+        y=[peak_value],
+        mode='markers+text',
+        name="Peak",
+        marker=dict(color='red', size=10, symbol='star'),
+        text=[f'Day {peak_day}: {peak_value:.2f}%'],
+        #textposition='top center'
+        textposition='middle right'
+    )
+
+    # Combine both the susceptible decrease rate and the peak marker
+    fig = go.Figure(data=[susceptible_decrease_trace, peak_marker])
+
+    # Add labels and title
+    fig.update_layout(
+        xaxis=dict(range=[1, days+1], dtick=10),
+        xaxis_title='Days',
+        yaxis_title='Infection Rate',
+        legend_title='Legend',
+        title_text=f"Infection Rate (Overall Infection Rate: {overallInfectionRate}%)",
+        font=dict(size=16)
+    )
+    fig.write_json('./data/currInfectionRate.json')
+    # Show the figure
+    #fig.show()
+    return fig, overallInfectionRate, susceptible_decrease_rate_per_susceptible
+
+
 
 def plotAgeGroup(inputPopulation, specificProportion):
     """
@@ -151,7 +209,9 @@ def plotAgeGroup(inputPopulation, specificProportion):
     fig = go.Figure(data=[trace1, trace2],)
 
     # Remove the legend
-    fig.update_layout(showlegend=False, title_text= "Overall Population Age Group Composition")
+    fig.update_layout(showlegend=False, 
+                      title_text= "Overall Population Age Group Composition",
+                      font=dict(size=16))
     fig.write_json('./data/currPlotAgeGroup.json')
     # Show the pie chart
     #fig.show()
@@ -185,7 +245,7 @@ def plotStackBar(days,susceptible_counts,presymptomatic_counts,asymptomatic_coun
     # plotly
     statusColourMap = {
         'Susceptible': 'blue',
-        'Presymptomatic': 'yellow',
+        'Presymptomatic': 'gold',
         'Asymptomatic': 'purple',
         'Infectious': 'red',
         'Recovered': 'green',
@@ -217,7 +277,8 @@ def plotStackBar(days,susceptible_counts,presymptomatic_counts,asymptomatic_coun
         barmode='stack',
         xaxis_title='Days',
         yaxis_title='Counts',
-        legend_title='Infection States'
+        legend_title='Infection States',
+        font=dict(size=16)
     )
     fig.write_json('./data/currStackBar.json')
     # Show the plot
@@ -260,7 +321,8 @@ def plotCountConnections(connections):
     fig.update_layout(
         title="Count Plot of Connections",
         xaxis_title="Connections",
-        yaxis_title="Count"
+        yaxis_title="Count",
+        font=dict(size=16)
     )
     x_range = list(range(min(connections), max(connections)+1))
     # Ensure all x-axis labels are displayed
@@ -315,7 +377,9 @@ def plotIndiConnAgeGroup(data, id):
     fig = go.Figure(data=[trace1, trace2],)
 
     # Remove the legend
-    fig.update_layout(showlegend=False, title=f"Selected Individual Node {id} Connections Age Group",)
+    fig.update_layout(showlegend=False, 
+                      title=f"Selected Individual Node {id} Connections Age Group",
+                      font=dict(size=16))
 
     # Show the pie chart
     #fig.show()
@@ -378,7 +442,8 @@ def plotDistributionSubPlot():
     # Update the layout for the entire figure (for common settings like title, etc.)
     fig.update_layout(
         title='Distribution Plots: Presymptomatic, Infectious, Asymptomatic',
-        showlegend=False
+        showlegend=False,
+        font=dict(size=16)
     )
 
     # Customize axes for individual subplots
