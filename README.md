@@ -1,10 +1,6 @@
-# Epidemic-Spread-Simulation
-Understanding Models and simulate it
-
-Based on the document on https://www.nature.com/articles/s41598-023-32542-3
-
 # Identifying Hidden Spreaders in COVID-19 Contact Networks  
 *A Network-Based Epidemiological Analysis Using a Modified SPAIR Model*  
+Based on the document on https://www.nature.com/articles/s41598-023-32542-3
 ---
 
 ## 📌 Overview  
@@ -117,6 +113,29 @@ when Age Factor is not considered, connection is assigned using normal distribut
 ---
 
 
+## 📂 Repository Structure  
+This repository is organized into the following folders and files:  
 
+### **`data/`**  
+Contains synthetic contact network datasets used in the simulations. These networks are generated based on real-world demographic data and include:  
+- `static_network.csv`: A fixed contact network where connections remain constant throughout the simulation.  
+- `dynamic_network.csv`: A dynamic contact network where connections change daily, reflecting real-world variability in human interactions.  
+- `age_network.csv`: An age-structured contact network where interactions are clustered by demographic groups (e.g., age 0–25, 25–44, etc.).  
+
+### **`simulations/`**  
+Contains the core scripts for running the SPAIR model and generating results:  
+- `spair_model.py`: The main script for simulating disease spread using the modified SPAIR model. It includes probabilistic state transitions and supports various network types.  
+- `network_generator.py`: A script for generating synthetic contact networks based on user-defined parameters (e.g., population size, age distribution).  
+- `intervention.py`: A script for simulating vaccination and isolation interventions, including timing and coverage effects.  
+
+### **`figures/`**  
+Stores visualizations and analysis results:  
+- `infection_curves/`: Graphs showing the progression of infections over time under different scenarios.  
+- `heatmaps/`: Heatmaps visualizing contact frequencies between age groups.  
+- `peak_analysis/`: Analysis of infection peaks and their timing under varying intervention strategies.  
+
+### **Other Files**  
+- `LICENSE`: The license file for the project (MIT License).  
+- `README.md`: Overview of the project, instructions, and repository structure.  
 
 
