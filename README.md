@@ -8,7 +8,8 @@ Based on the document on https://www.nature.com/articles/s41598-023-32542-3
 ---
 
 ## 📌 Overview  
-This repository presents a computational framework to identify **hidden spreaders**—asymptomatic, presymptomatic, or highly connected individuals driving COVID-19 transmission—by analyzing human contact networks. The study leverages a modified **SPAIR model** (Susceptible, Presymptomatic, Asymptomatic, Infectious, Recovered) and synthetic contact networks to simulate disease dynamics under diverse scenarios, including:  
+This repository presents a computational framework to identify **hidden spreaders**—asymptomatic, or highly connected individuals driving COVID-19 transmission—by analyzing human contact networks. </br>
+The study leverages a modified **SPAIR model** (Susceptible, Presymptomatic, Asymptomatic, Infectious, Recovered) and synthetic contact networks to simulate disease dynamics under diverse scenarios, including:  
 - **Network types**: Static (fixed connections), Dynamic (daily-changing interactions), Age-structured (demographic clustering).  
 - **Interventions**: Vaccination, isolation, and demographic targeting.  
 - **Key parameters**: Age distribution, vaccination rate, isolation timing, and population size.  
@@ -74,7 +75,7 @@ where:
 - λ is the average time a susceptible person carries the virus
 - FP(d), FI(d), and FA(d) are the cumulative distribution functions of the duration length d for the respective states.
 - $∂_i$ represents the set of neighbors of i in the network, and F(t,j,β) is the probability that i is infected by j on day t.
-- $ \mu_A $, $ \exp \left( \mu_p + \frac{\sigma_p^2}{2} \right) $, $ \mu_I $ are the average time of the virus carried by infected individuals in A, P, and I states respectively.
+- $\mu_A$, $\exp\left(\mu_p + \frac{\sigma_p^2}{2}\right)$, $\mu_I$ are the average time of the virus carried by infected individuals in A, P, and I states respectively.
 
 
 #### **3. Vaccination Impact**  
@@ -82,11 +83,14 @@ Vaccination modifies an individual’s susceptibility and reduces overall networ
 $R_0 = R_0 \ (1 - \text{Vaccination Effectiveness})$
 
 #### **4. Isolation Effects**  
-Isolation removes infected individuals from the network, reducing effective transmission:  
+Isolation removes individuals in infectious state from the network, reducing effective transmission:  
 
-#### **5. Age-Based Connection Network **  
-Individual Connections are generated based age group connections
-![image](https://github.com/user-attachments/assets/4fb53da0-7cdd-4a97-8555-20005b8393ff)
+#### **5. Age-Based Connection Network**  
+Individual Connections are generated based age group connections </br>
+<img src="https://github.com/user-attachments/assets/ed057939-d416-4210-ab01-d399a48c1430" alt="image" width="700"/> </br>
+
+when Age Factor is not considered, connection is assigned using normal distribution of the largest standard deviation/mean Age Group (10-14)
+
 
 ---
 
