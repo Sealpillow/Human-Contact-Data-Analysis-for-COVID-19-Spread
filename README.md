@@ -184,3 +184,29 @@ Step 2: Copy this to browser to access application
 ```
 http://127.0.0.1:8050/
 ```
+Step 3: Select desired parameters and click generate </br>
+
+<img src="https://github.com/user-attachments/assets/50e4c25e-2ab9-4b2b-9a9d-5955e7d3cca3" alt="image" width="250"/> </br>
+
+Step 4: Wait for the network to be generated </br>
+![Recording2025-01-30002658-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/082119ae-e8c8-4f8c-8330-e9bcb7ee0aa3)
+
+Step 5: Visualizing the simulation </br>
+![Recording2025-01-30003527-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/37026bec-64ea-42c2-a87a-4d7131ca4e2b)
+
+Step 6: Select any individual you want to obeserve e.g Node 1 </br>
+![image](https://github.com/user-attachments/assets/a36271e6-6043-4310-9932-9d5aec8e70d1)
+
+Step 7: To focus on the connection of the selected node by clicking 'Remove Non-Selected Node Connections'. and the </br>
+![20250129-1645-45 5382081-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/33a203a3-6bd6-4f5d-8989-c720ffecc35c)
+
+Step 8: Click on the node at network exploration to get information of the node e.g probability to change state. </br>
+![image](https://github.com/user-attachments/assets/2430f344-302b-4b58-9066-f04136ef21b7) </br>
+![image](https://github.com/user-attachments/assets/701ef472-900e-4e44-a30c-be68381ea49c) </br>
+
+Step 9: Scroll futher down and you can see more information on the status of the network to identify potential hidden spreaders (Asymtomatic)</br>
+![image](https://github.com/user-attachments/assets/2afac71d-0c19-455d-8b23-e09e1dc534e4)
+
+Step 10: Observe the SPAIR Infection model Prediction Result </br>
+![newplot (17)](https://github.com/user-attachments/assets/bd133f0b-1ec4-412e-aa79-6e0c2641f09b)
+
