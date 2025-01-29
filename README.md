@@ -79,7 +79,7 @@ Each infected individual progresses through different states with assigned proba
 
 | Transition | Description | Probability |
 |------------|------------|-------------|
-| \( P \to I \) | Presymptomatic to Infectious | \( P_{PI} = 0.85 \) |
+| \( S \to P \) | Presymptomatic to Infectious | $P^1_i(t+1) = S_i(t) \cdot (1 - p) \cdot \left( 1 - \prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right) \right)$ |
 | \( P \to A \) | Presymptomatic to Asymptomatic | \( P_A = 0.15 \) |
 | \( I \to R \) | Infectious to Recovered | \( P_R = 1 - e^{-\gamma} \) |
 | \( A \to R \) | Asymptomatic to Recovered | \( P_{AR} = 1 - e^{-\gamma_A} \) |
