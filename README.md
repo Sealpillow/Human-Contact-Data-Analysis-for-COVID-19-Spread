@@ -69,7 +69,7 @@ $A_i(t)$ - Probability that an individual is in Asymtomatic state </br>
 | Infected Probability | $C_i(t) = P_i(t) + I_i(t) + A_i(t)$ |
 | Infection Probability To A Single Neighbou | $F(t, j, \beta) = C_j(t) \cdot \beta$ |
 | Probability Of Not Infected By All Neighbour | $\prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right)$ |
-| Probability Of Infected By Any Neighbour | $1 - \prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right)$   |
+| Probability Of Infected By Any Neighbour | $1 - \prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right)$ |
 | Transmission probability | $\beta = \frac{R_0}{\lambda(k)}$ |
 | Average time a susceptible person carries the virus | $\lambda = p \cdot \mu_A + (1 - p) \cdot \left( \exp\left( \mu_p + \frac{\sigma_p^2}{2} \right) + \mu_I \right)$ |
 
@@ -79,10 +79,15 @@ Each infected individual progresses through different states with assigned proba
 
 | Transition | Description | Probability |
 |------------|------------|-------------|
-| \( S \to P \) | Presymptomatic to Infectious | $P^1_i(t+1) = S_i(t) \cdot (1 - p) \cdot \left( 1 - \prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right) \right)$ |
-| \( P \to A \) | Presymptomatic to Asymptomatic | \( P_A = 0.15 \) |
-| \( I \to R \) | Infectious to Recovered | \( P_R = 1 - e^{-\gamma} \) |
-| \( A \to R \) | Asymptomatic to Recovered | \( P_{AR} = 1 - e^{-\gamma_A} \) |
+| S → P | Susceptible to Presymptomatic | $P_i(t+1) = S_i(t) \cdot (1 - p) \cdot \left( 1 - \prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right) \right)$ |
+| S → A | Susceptible to Asymptomatic | $A_i(t+1) = S_i(t) \cdot p \cdot \left( 1 - \prod\limits_{j \in \partial_i} \left( 1 - F(t, j, \beta) \right) \right)$ |
+| S → S | Remain Susceptible | $S_i(t+1) = 1 - P_i(t+1)- A_i(t+1)$ |
+| P → I | Presymptomatic to Infectious | $I_i(t+1) = \sum_{d=1}^{\infty} P_i \cdot \left( \frac{F_P(d) - F_P(d-1)}{1 - F_P(d-1)} \right)$ |
+| P → P | Remain Presymptomatic | $P_i(t+1) = 1 - I_i(t+1)$ |
+| I → R | Infectious to Recovered | $R_i(t+1) = R_i(t) + \sum_{d=1}^{\infty} I_i \cdot \left( \frac{F_I(d) - F_I(d-1)}{1 - F_I(d-1)} \right)$ |
+| I → I | Remain Infectious | $I_i(t+1) = 1 - R_i(t+1)$ |
+| A → R | Infectious to Recovered | $R_i(t+1) = R_i(t) + \sum_{d=1}^{\infty} A_i \cdot \left( \frac{F_A(d) - F_A(d-1)}{1 - F_A(d-1)} \right)$ |
+| A → A | Remain Infectious | $A_i(t+1) = 1 - R_i(t+1)$ |
 
 where:  
 - \( P_{PI} + P_A = 1 \) (infected individuals either develop symptoms or remain asymptomatic).  
