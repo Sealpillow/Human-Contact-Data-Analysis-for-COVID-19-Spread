@@ -7,7 +7,7 @@ from scipy.stats import lognorm, norm
 from Network import Network
 from Node import Node
 from DailyNetworks import DailyNetworks
-from GenerateConnectionsCsv import GenerateInfectiousUniqueConnections, GenerateInfectiousSameConnections, GenerateInfectiousCompleteConnections,GenerateInfectiousModelConnections
+from GenerateConnectionsCsv import GenerateInfectiousUniqueConnections, GenerateInfectiousSameConnections, GenerateInfectiousCompleteConnections
 import json
 import sys
 import jsonpickle
@@ -599,7 +599,7 @@ def simulate(seed, population, days, randomNumPeople):
 def main():
     """
     The main function to initialize parameters, generate contact networks, and simulate the spread of an infectious disease within a population.
-    This function reads command-line arguments to configure the simulation, generates the contact network based on the chosen model (e.g., 'same', 'unique', 'complete', or 'model'),
+    This function reads command-line arguments to configure the simulation, generates the contact network based on the chosen model (e.g., 'same', 'unique', 'complete'),
     and runs the simulation over a specified number of days. During the simulation, various factors like vaccination, isolation, and age groups are considered.
     The simulation results, including the network data, infection statistics, and plots, are serialized into JSON format and printed to the console for further processing by the Dash app.
 
@@ -615,7 +615,7 @@ def main():
       - affected (int): The number of initial infected individuals.
       - interventionDay (int): The day on which vaccination or other interventions start.
       - percentVac (float): The percentage of individuals vaccinated per day.
-      - radio (str): The type of connection model used ('same', 'unique', 'complete', or 'model').
+      - radio (str): The type of connection model used ('same', 'unique', 'complete').
       - proportion (list of ints): The age group proportions in the population.
       - checkbox (list of str): A list of additional options (e.g., 'age', 'isolate').
 
@@ -659,8 +659,6 @@ def main():
         GenerateInfectiousSameConnections(population, days, seed, ageGroupsDistribution, checkbox)  # Generate the same contacts each day
     elif radio == 'complete':
         GenerateInfectiousCompleteConnections(population, days, seed, ageGroupsDistribution)  # Generate a complete contact network
-    elif radio == 'model':
-        GenerateInfectiousModelConnections(population, days, seed, ageGroupsDistribution)  # Generate contacts based on a specific model
 
     # Get the daily network data (from 'infectious.csv')
     dailyNetwork = getData('infectious.csv', days)

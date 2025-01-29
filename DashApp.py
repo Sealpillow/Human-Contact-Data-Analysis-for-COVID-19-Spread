@@ -157,7 +157,6 @@ app.layout = html.Div([
                         {'label': ' Same Daily Network', 'value': 'same'},
                         {'label': ' Unique Daily Network', 'value': 'unique'},
                         {'label': ' Complete Daily Network', 'value': 'complete'},
-                        {'label': ' Model Network', 'value': 'model'},
                     ],
                     value='same',
                     style={'margin-bottom': '15px', 'color': 'white'}
