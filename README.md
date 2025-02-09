@@ -214,5 +214,14 @@ Step 11: To Compare Different parameter result. Click the 'Compare Previous' But
 A Popup window with graph will be open to compare the results </br>
 ![image](https://github.com/user-attachments/assets/88f193da-c70f-4821-8b4a-47e99690cfc5)
 
+Assuming prior knowledge of hidden spreaders within the model, we can test prediction methods and evaluate their effectiveness, providing a framework that, when applied in real-world scenarios
+![newplot (5)](https://github.com/user-attachments/assets/465d45f1-41a5-49f0-bdac-03101ca7a46f)
 
+- Correct Prediction Hidden Spreader: Node whose infection status matched the prediction of being a hidden spreader.
+- Missed Prediction Hidden Spreader: Node incorrectly predicted not to be a hidden spreader but turned out to be one.
+- Potential Hidden Spreader: Node that could potentially become a hidden spreader but hasn't yet.
+- Hidden Spreader: Node spreading infection without showing symptoms (asymptomatic or presymptomatic).
+- Remained Susceptible: Node that never got infected.
+- Late Infection: The node became infected after day 10.
+- Early Infection: The node became infected before day 10.
 
