@@ -14,7 +14,8 @@ Building on [previous research](https://www.nature.com/articles/s41598-023-32542
 ## 🔑 Key Features  
 1. **SPAIR Model Enhancements**  
    - Probabilistic state transitions (vs. duration-based transitions in traditional models).  
-   - Integration of age-specific contact matrices and vaccination/isolation effects.  
+   - Integration of age-specific contact matrices and vaccination/isolation effects.
+   - Explicit Consideration of Hidden Spreaders: Predicts the role of presymptomatic (P) and asymptomatic (A) individuals in transmission dynamics.
 2. **Synthetic Network Generation**  
    - Configurable networks based on real-world demographic data (e.g., [Mossong et al. 2008](https://doi.org/10.1371/journal.pmed.0050074)).  
    - Supports static, dynamic, and fully connected networks.  
