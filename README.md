@@ -215,7 +215,7 @@ A Popup window with graph will be open to compare the results </br>
 ![image](https://github.com/user-attachments/assets/eeaf57ae-2af2-4869-a08d-9a6ad1e03726)
 
 Assuming prior knowledge of hidden spreaders within the model, we can test prediction methods and evaluate their effectiveness, providing a framework that, when applied in real-world scenarios
-![newplot (5)](https://github.com/user-attachments/assets/465d45f1-41a5-49f0-bdac-03101ca7a46f)
+![newplot (44)](https://github.com/user-attachments/assets/01c04e93-e1f8-47d2-80e6-ebf3c36a5d8f)
 
 - Correct Prediction Hidden Spreader: Node whose infection status matched the prediction of being a hidden spreader.
 - Missed Prediction Hidden Spreader: Node incorrectly predicted not to be a hidden spreader but turned out to be one.
