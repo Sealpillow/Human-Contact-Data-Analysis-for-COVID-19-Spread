@@ -186,7 +186,7 @@ Step 2: Copy this to browser to access application
 http://127.0.0.1:8050/
 ```
 Step 3: Select desired parameters and click generate </br>
-<img src="https://github.com/user-attachments/assets/b1aec26d-9f41-4b88-82aa-660b44341562" alt="image" width="250"/> </br>
+<img src="https://github.com/user-attachments/assets/efdfc460-f80a-40e2-a20c-b516f262b70a" alt="image" width="250"/> </br>
 
 Step 4: Wait for the network to be generated </br>
 ![Recording2025-01-30002658-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/082119ae-e8c8-4f8c-8330-e9bcb7ee0aa3)
