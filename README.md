@@ -204,15 +204,15 @@ Step 8: Click on the node at network exploration to get information of the node 
 ![image](https://github.com/user-attachments/assets/2430f344-302b-4b58-9066-f04136ef21b7) </br>
 ![image](https://github.com/user-attachments/assets/701ef472-900e-4e44-a30c-be68381ea49c) </br>
 
-Step 9: Scroll futher down and you can see more information on the status of the network to identify potential hidden spreaders (Asymtomatic)</br>
-![image](https://github.com/user-attachments/assets/2afac71d-0c19-455d-8b23-e09e1dc534e4)
+Step 9: Scroll futher down and you can see more information on the status of the displayed network to identify potential hidden spreaders (Asymtomatic)</br>
+![image](https://github.com/user-attachments/assets/600ff08d-dbb5-4ccc-881f-9eb530a5c605)
 
 Step 10: Observe the SPAIR Infection model Prediction Result </br>
 ![newplot (17)](https://github.com/user-attachments/assets/bd133f0b-1ec4-412e-aa79-6e0c2641f09b)
 
 Step 11: To Compare Different parameter result. Click the 'Compare Previous' Button. </br>
 A Popup window with graph will be open to compare the results </br>
-![image](https://github.com/user-attachments/assets/88f193da-c70f-4821-8b4a-47e99690cfc5)
+![image](https://github.com/user-attachments/assets/eeaf57ae-2af2-4869-a08d-9a6ad1e03726)
 
 Assuming prior knowledge of hidden spreaders within the model, we can test prediction methods and evaluate their effectiveness, providing a framework that, when applied in real-world scenarios
 ![newplot (5)](https://github.com/user-attachments/assets/465d45f1-41a5-49f0-bdac-03101ca7a46f)
