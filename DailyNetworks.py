@@ -25,25 +25,16 @@ class DailyNetworks:
     def getNetworkByDay(self, day):
         return self.networks.get(day)
     
-    def calInfectionRate(self):
-        # to find the day where the infection stops, susceptible number remains constant
-        sCount = 0
-        repeatedDays = 0
-        prevCount = 0
-        dayNum = 0
-        for network in self.neworks.values():
-            dayNum += 1
-            for node in network.values(): # count the number of Susceptible individual per day
-                if node.status=='A':
-                    sCount +=1
-            if sCount != prevCount:
-                prevCount = sCount
-                repeatedDays = 0
-            else:
-                repeatedDays +=1
-            if repeatedDays > 2:
-                return dayNum
-        return dayNum
+    def getAvgDailyConnectionsList(self):
+        DailyAvgConnectionsList = []
+        for network in self.networks.values():
+            sum  = 0
+            count = 0
+            for node in network.getNodes().values():
+                sum+=len(node.connections)
+                count+=1
+            DailyAvgConnectionsList.append(round(sum/count,2))
+        return DailyAvgConnectionsList    
 
 
     

@@ -15,7 +15,7 @@ from plotGraph import plotCountConnections,plotDistributionSubPlot, plotIndiConn
 import pandas as pd
 import numpy as np
 import shutil
-
+import time
 from generateTable import generate_contact_matrix_table,generate_vaccination_impact_contact_patterns_table
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -37,11 +37,14 @@ countPlot = None
 distributionSubPlot = None
 indiAgeFreqPlot = None
 infectionRatePlot = None
+degreeVsInfectionPlot = None
+truePositiveRatePlot = None
 overallInfectionRate = 0  
 dayInfectionRateList = []
+avgDailyConnectionsList = []
 currVer = []
 prevVer = []
-current_day = 1
+current_day = 0
 
 app.layout = html.Div([
 
@@ -67,7 +70,7 @@ app.layout = html.Div([
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),  
 
                 html.P([f"Population",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Size of population")]),
-                dcc.Input(id='population-input', type='number', value=150, min = 150, placeholder='Enter population', className='dcc.Input',
+                dcc.Input(id='population-input', type='number', value=1000, min = 20, placeholder='Enter population', className='dcc.Input',
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
                 html.P([f"Days",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Number of simulation days")]),
@@ -80,7 +83,7 @@ app.layout = html.Div([
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
                 html.P([f"Intervention Day",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "10px"},title="The day vaccination is implemented to population (Not on Day 1)")]),
-                dcc.Input(id='interventionDay-input', type='number', value=25, min = 2, placeholder='Enter Vaccination Intervention Day', className='dcc.Input',
+                dcc.Input(id='interventionDay-input', type='number', value=29, min = 2, placeholder='Enter Vaccination Intervention Day', className='dcc.Input',
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),          
 
                 html.P([f"Vaccination rate",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "10px"},title="The day vaccination is implemented to population (Not on Day 1)")]),
@@ -120,44 +123,62 @@ app.layout = html.Div([
                     tooltip={"placement": "bottom", "always_visible": True}
                 ),
                 html.Div([
-                    html.Label("Age Group (<25)", style={'padding-right': '10px'}),
-                    dcc.Input(id='input-age-1', type='number', min=0, step=1, value=10,
+                    html.Label("Age Group (0 - 9)", style={'padding-right': '10px'}),
+                    dcc.Input(id='input-age-1', type='number', min=0, step=0.1, value=12.5,
                                style={'margin-bottom': '15px', 'width': '50px', 'height': '25px', 'font-size': '15px'}),
                     html.Label('%'),  # Add % symbol beside input
                 ]), 
                 
                 html.Div([
-                    html.Label("Age Group (25 - 44)", style={'padding-right': '10px'}),
-                    dcc.Input(id='input-age-2', type='number', min=0, step=1, value=15,
+                    html.Label("Age Group (10 - 19)", style={'padding-right': '10px'}),
+                    dcc.Input(id='input-age-2', type='number', min=0, step=0.1, value=12.5,
                                style={'margin-bottom': '15px', 'width': '50px', 'height': '25px', 'font-size': '15px'}),
                     html.Label('%'),  # Add % symbol beside input
                 ]), 
                 
                 html.Div([
-                    html.Label("Age Group (45 - 64)", style={'padding-right': '10px'}),
-                    dcc.Input(id='input-age-3', type='number', min=0, step=1, value=25,
+                    html.Label("Age Group (20 - 29)", style={'padding-right': '10px'}),
+                    dcc.Input(id='input-age-3', type='number', min=0, step=0.1, value=12.5,
                                style={'margin-bottom': '15px', 'width': '50px', 'height': '25px', 'font-size': '15px'}),
                     html.Label('%'),  # Add % symbol beside input
                 ]),
                 html.Div([
-                    html.Label("Age Group (65 - 74)", style={'padding-right': '10px'}),
-                    dcc.Input(id='input-age-4', type='number', min=0, step=1, value=25,
+                    html.Label("Age Group (30 - 39)", style={'padding-right': '10px'}),
+                    dcc.Input(id='input-age-4', type='number', min=0, step=0.1, value=12.5,
                                style={'margin-bottom': '15px', 'width': '50px', 'height': '25px', 'font-size': '15px'}),
                     html.Label('%'),  # Add % symbol beside input
                 ]),
                 html.Div([
-                    html.Label("Age Group (>74)", style={'padding-right': '10px'}),
-                    dcc.Input(id='input-age-5', type='number', min=0, step=1, value=25,
+                    html.Label("Age Group (40 - 49)", style={'padding-right': '10px'}),
+                    dcc.Input(id='input-age-5', type='number', min=0, step=0.1, value=12.5,
                                style={'margin-bottom': '15px', 'width': '50px', 'height': '25px', 'font-size': '15px'}),
                     html.Label('%'),  # Add % symbol beside input
                 ]),
-                
+                html.Div([
+                    html.Label("Age Group (50 - 59)", style={'padding-right': '10px'}),
+                    dcc.Input(id='input-age-6', type='number', min=0, step=0.1, value=12.5,
+                               style={'margin-bottom': '15px', 'width': '50px', 'height': '25px', 'font-size': '15px'}),
+                    html.Label('%'),  # Add % symbol beside input
+                ]),
+                html.Div([
+                    html.Label("Age Group (60 - 69)", style={'padding-right': '10px'}),
+                    dcc.Input(id='input-age-7', type='number', min=0, step=0.1, value=12.5,
+                               style={'margin-bottom': '15px', 'width': '50px', 'height': '25px', 'font-size': '15px'}),
+                    html.Label('%'),  # Add % symbol beside input
+                ]),
+                html.Div([
+                    html.Label("Age Group (> 70)", style={'padding-right': '10px'}),
+                    dcc.Input(id='input-age-8', type='number', min=0, step=0.1, value=12.5,
+                               style={'margin-bottom': '15px', 'width': '50px', 'height': '25px', 'font-size': '15px'}),
+                    html.Label('%'),  # Add % symbol beside input
+                ]),
+
                 html.P(id='total-output', style={'color': 'red'}),
                 dcc.RadioItems(
                     id='connection-radio',
                     options=[
                         {'label': ' Same Daily Network', 'value': 'same'},
-                        {'label': ' Unique Daily Network', 'value': 'unique'},
+                        {'label': ' Dynamic Daily Network', 'value': 'dynamic'},
                         {'label': ' Complete Daily Network', 'value': 'complete'},
                     ],
                     value='same',
@@ -172,7 +193,7 @@ app.layout = html.Div([
                                        {'label': ' Isolate Node in Infectious state*', 'value': 'isolate'},
                                        {'label': ' Include Age factor*', 'value': 'age'},
                                        {'label': ' Include Vaccination factor*', 'value': 'vaccination'}],
-                              value=['age'],
+                              value=[],
                               labelStyle={'margin-right': '10px'},
                               style={'color': 'white', 'margin-bottom': '15px'}),
 
@@ -248,7 +269,7 @@ app.layout = html.Div([
             cyto.Cytoscape(
                 id='animated-network',
                 elements=[],
-                layout={'name': 'concentric', 'animate': True, 'minNodeSpacing': 30, 'avoidOverlap': True},
+                layout={'name': 'concentric', 'animate': False, 'minNodeSpacing': 30, 'avoidOverlap': True},
                 maxZoom=1,
                 style={'width': '100%', 'height': '80vh', 'margin-bottom': '3vh'}
             ),
@@ -268,7 +289,6 @@ app.layout = html.Div([
                 ]
             ),
             dcc.Interval(id='interval-component', interval=1000, n_intervals=0),
-
             # Additional Graphs
             html.Div([
                 dcc.Graph(id='plotly-graph1', style={'height': '80vh', 'margin-bottom': '1vh'}),
@@ -278,6 +298,8 @@ app.layout = html.Div([
                 dcc.Graph(id='plotly-graph5', style={'height': '80vh', 'margin-bottom': '1vh'}),
                 dcc.Graph(id='plotly-graph6', style={'height': '80vh', 'margin-bottom': '1vh'}),
                 dcc.Graph(id='plotly-graph7', style={'height': '80vh', 'margin-bottom': '1vh'}),
+                dcc.Graph(id='plotly-graph8', style={'height': '80vh', 'margin-bottom': '1vh'}),
+                dcc.Graph(id='plotly-graph9', style={'height': '80vh', 'margin-bottom': '1vh'}),
                 html.H3("Vaccination Impact and Contact Patterns Across Age Groups", style={'margin-bottom': '15px', 'color': 'white'}),
                 generate_vaccination_impact_contact_patterns_table(),
                 dbc.Alert(id='tbl_out'),
@@ -347,21 +369,21 @@ app.layout = html.Div([
                                 html.Div([
                                     html.H3("Previous", style={'text-align': 'center', 'margin-bottom': '10px'}),
                                     html.Div(id='prevVer', style={'text-align': 'center'}),
-                                    dcc.Graph(id='popup-prevGraph1',style={'width': '700px'}),  
-                                    dcc.Graph(id='popup-prevGraph2',style={'width': '700px'}),
-                                    dcc.Graph(id='popup-prevGraph3',style={'width': '700px'}),
-                                    dcc.Graph(id='popup-prevGraph4',style={'width': '700px'}),
-                                    dcc.Graph(id='popup-prevGraph5',style={'width': '700px'}),
+                                    dcc.Graph(id='popup-prevGraph1',style={'width': '675px'}),  
+                                    dcc.Graph(id='popup-prevGraph2',style={'width': '675px'}),
+                                    dcc.Graph(id='popup-prevGraph3',style={'width': '675px'}),
+                                    dcc.Graph(id='popup-prevGraph4',style={'width': '675px'}),
+                                    dcc.Graph(id='popup-prevGraph5',style={'width': '675px'}),
                                 ], style={'display': 'flex', 'flex-direction': 'column', 'gap': '10px'}),  # First column
 
                                 html.Div([
                                     html.H3("Current", style={'text-align': 'center', 'margin-bottom': '10px'}),
                                     html.Div(id='currVer', style={'text-align': 'center'}),
-                                    dcc.Graph(id='popup-currGraph1',style={'width': '700px'}),  
-                                    dcc.Graph(id='popup-currGraph2',style={'width': '700px'}),
-                                    dcc.Graph(id='popup-currGraph3',style={'width': '700px'}),
-                                    dcc.Graph(id='popup-currGraph4',style={'width': '700px'}),
-                                    dcc.Graph(id='popup-currGraph5',style={'width': '700px'}),
+                                    dcc.Graph(id='popup-currGraph1',style={'width': '675px'}),  
+                                    dcc.Graph(id='popup-currGraph2',style={'width': '675px'}),
+                                    dcc.Graph(id='popup-currGraph3',style={'width': '675px'}),
+                                    dcc.Graph(id='popup-currGraph4',style={'width': '675px'}),
+                                    dcc.Graph(id='popup-currGraph5',style={'width': '675px'}),
                                 ], style={'display': 'flex', 'flex-direction': 'column', 'gap': '10px'}),  # Second column
                             ], style={'display': 'flex', 'gap': '20px', 'justify-content': 'space-between','overflow': 'hidden'}),  # Two-column grid
                         ], style={'padding': '20px', 'background-color': 'white', 'position': 'relative'})
@@ -373,16 +395,16 @@ app.layout = html.Div([
                         'left': '50%',  # Center the modal horizontally
                         'transform': 'translate(-50%, -50%)',  # Adjust to center properly
                         'width': '100%',  # Set the width of the modal (adjust as needed)
-                        'max-width': '1480px',  # Max width for large screens
+                        'max-width': '1420px',  # Max width for large screens
                         'height': 'auto',  # Allow height to adjust based on content
-                        'max-height': '100vh',  # Set the maximum height to the viewport height
+                        'max-height': '90vh',  # Set the maximum height to the viewport height
                         'background-color': 'rgba(0, 0, 0, 0.5)',  # Semi-transparent background
                         'justify-content': 'center',
                         'align-items': 'center',
                         'z-index': '1000',
                         'border-radius': '10px',
                         'overflow-x': 'hidden',  # Disable horizontal scrolling
-                        'overflow-y': 'auto',  # Enable vertical scrolling for the outer modal
+                        'overflow-y': 'hidden',  # Enable vertical scrolling for the outer modal
                     }
                 )
   
@@ -685,6 +707,9 @@ def processNetwork(network, selected_node, checkbox):
      State('input-age-3', 'value'),
      State('input-age-4', 'value'),
      State('input-age-5', 'value'),
+     State('input-age-6', 'value'),
+     State('input-age-7', 'value'),
+     State('input-age-8', 'value'),
      State('seed-input', 'value'),
      State('reproNum-input', 'value'),
      State('population-input', 'value'),
@@ -695,7 +720,7 @@ def processNetwork(network, selected_node, checkbox):
      State('connection-radio', 'value')
     ]
 )
-def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, age1, age2, age3, age4, age5, seed, reproNum, population, days, affected, interventionDay, vacPercent, radio):
+def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, age1, age2, age3, age4, age5, age6, age7, age8, seed, reproNum, population, days, affected, interventionDay, vacPercent, radio):
     """
     Callback function that generates and updates a contact network based on user input. 
     It processes the user inputs, validates them, runs an external simulation, and updates the network visualization accordingly.
@@ -705,7 +730,7 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
         selected_node (str): Node selected in the Cytoscape network.
         slider_value (int): Value from the slider to determine the day of the network to display.
         checkbox (list): List of selected checkboxes indicating which parameters are enabled (e.g., age, vaccination, isolation).
-        age1, age2, age3, age4, age5 (int): Percentage composition of different age groups in the population.
+        age1, age2, age3, age4, age5, age6, age7, age8 (float): Percentage composition of different age groups in the population.
         seed (int): Seed for the random number generator.
         reproNum (float): Reproduction number for the simulation.
         population (int): Total population size.
@@ -724,12 +749,12 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
             - prevVer (list): Version details of the previous simulation.
             - currVer (list): Version details of the current simulation.
     """
-    global dailyNetwork, infectionGraph, populationPie, stackBarPlot, infectionRatePlot, current_day, overallInfectionRate, dayInfectionRateList, prevVer, currVer
+    global dailyNetwork, infectionGraph, populationPie, stackBarPlot, infectionRatePlot, degreeVsInfectionPlot, truePositiveRatePlot, current_day, overallInfectionRate, dayInfectionRateList, avgDailyConnectionsList, prevVer, currVer
 
     # Handle "Generate" button click
     if n_clicks > 0:
         # Validate age composition if the 'age' option is selected
-        if 'age' in checkbox and sum([age1, age2, age3, age4, age5]) != 100:
+        if 'age' in checkbox and sum([age1, age2, age3, age4, age5, age6, age7, age8]) != 100:
             return [], 0, True, 'Ensure Age composition = 100%', prevVer, currVer
 
         # Validate inputs for 'vaccination' and 'isolate' options
@@ -743,12 +768,8 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
             return [], 0, True, 'Check for empty inputs', prevVer, currVer
 
         # Set default values if certain options are not selected
-        if 'vaccination' not in checkbox:
-            interventionDay = vacPercent = -1
-        if 'isolate' not in checkbox:
-            interventionDay = -1
         if 'age' not in checkbox:
-            age1 = age2 = age3 = age4 = age5 = 20  # Equal distribution by default
+            age1 = age2 = age3 = age4 = age5 = age6 = age7 = age8 = 12.5  # Equal distribution by default
 
         try:
             # Reset and rename files for storing status
@@ -769,15 +790,21 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
             if 'age' in checkbox:
                 age_group_details = 'Composition of age group:'
                 if age1 != 0:
-                    age_group_details += f' (<25): {age1}%,'
+                    age_group_details += f' (0-9): {age1}%,'
                 if age2 != 0:
-                    age_group_details += f' (25-44): {age2}%,'
+                    age_group_details += f' (10-19): {age2}%,'
                 if age3 != 0:
-                    age_group_details += f' (45-64): {age3}%,'
+                    age_group_details += f' (20-29): {age3}%,'
                 if age4 != 0:
-                    age_group_details += f' (65-74): {age4}%,'
+                    age_group_details += f' (30-39): {age4}%,'
                 if age5 != 0:
-                    age_group_details += f' (>74): {age5}%,'
+                    age_group_details += f' (40-49): {age5}%,'
+                if age6 != 0:
+                    age_group_details += f' (50-59): {age6}%,'
+                if age7 != 0:
+                    age_group_details += f' (60-69): {age7}%,'
+                if age8 != 0:
+                    age_group_details += f' (>70): {age8}%,'
                 currVer.append(age_group_details[:-1])  # Remove trailing comma
             status['currVer'] = currVer
             currVer = [html.P(f"{line}", style={'word-wrap': 'break-word','color':'black'}) for line in currVer]
@@ -787,7 +814,7 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
                 json.dump(status, file, indent=4)
 
             # Execute external program with provided inputs
-            proportionList = [str(age1), str(age2), str(age3), str(age4), str(age5)]
+            proportionList = [str(age1), str(age2), str(age3), str(age4), str(age5), str(age6), str(age7), str(age8)]
             result = subprocess.run(
                 ['python', templatePath, str(seed), str(reproNum), str(population), str(days), str(affected), str(interventionDay), str(vacPercent), str(radio)] + proportionList + checkbox,
                 capture_output=True,
@@ -802,13 +829,15 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
             populationPie = pio.from_json(output_data.get('populationPie'))
             stackBarPlot = pio.from_json(output_data.get('stackBarPlot'))
             infectionRatePlot = pio.from_json(output_data.get('infectionRatePlot'))
+            degreeVsInfectionPlot = pio.from_json(output_data.get('degreeVsInfectionPlot')) 
+            truePositiveRatePlot = pio.from_json(output_data.get('truePositiveRatePlot'))
             overallInfectionRate = output_data.get('overallInfectionRate')
             dayInfectionRateList = output_data.get('dayInfectionRateList')
-
+            avgDailyConnectionsList = list(map(float, output_data.get('avgDailyConnectionsList')))
+            
             dailyNetwork = jsonpickle.decode(encoded_network)
             network = dailyNetwork.getNetworkByDay('1')  # Access Day 1's network
             current_day = 1
-
             # Process network for Cytoscape elements
             elements = processNetwork(network, selected_node, checkbox)
 
@@ -962,9 +991,10 @@ def displayClickData(data, elements):
 @app.callback(
     Output('status-data', 'children'),  # Output where the status data will be displayed
     [Input('cytoscape', 'elements')],  # Input: cytoscape elements (network nodes)
-    [State('slider-input', 'value')]   # State: current value of the slider (Day)
+    [State('slider-input', 'value'),
+     State('day-input', 'value')]   # State: current value of the slider (Day)
 )
-def display_nodes_status(elements, day):
+def display_nodes_status(elements, day, totalDays):
     """
     Callback function to display the status of nodes in the network based on their 
     current state (Susceptible, Presymptomatic, Asymptomatic, Infectious, or Recovered) 
@@ -990,7 +1020,7 @@ def display_nodes_status(elements, day):
     If no elements are provided (i.e., no nodes in the network), the function returns 
     a default message prompting the user to generate a network to see the status.
     """
-    global countPlot, overallInfectionRate, dayInfectionRateList
+    global countPlot, overallInfectionRate, dayInfectionRateList, avgDailyConnectionsList
     # Define a color map for each status
     statusColourMap = {
         'Susceptible': 'blue',
@@ -1006,7 +1036,6 @@ def display_nodes_status(elements, day):
         aList = []
         iList = []
         rList = []
-        totalConnections = 0
         vaccinatedCount = 0
         unVaccinatedCount = 0
         count = 0
@@ -1038,13 +1067,12 @@ def display_nodes_status(elements, day):
                 # Count the number of connections a node has
                 nodeConnectionsNum = len(element['data']['connections'].split(', ')) 
                 nodeConnectionsCount.append(nodeConnectionsNum)   
-                totalConnections += nodeConnectionsNum
                 count += 1
         
         # Generate plot of node connection counts
         countPlot = plotCountConnections(nodeConnectionsCount)    
-        avgConnections = round(totalConnections/count, 2)  # Calculate average number of connections
-
+        avgConnections = avgDailyConnectionsList[day-1]      # Calculate average number of connections
+        overallConnections = round(sum(avgDailyConnectionsList)/totalDays,2)
         # Split the connections into manageable lines
         sList_lines = splitConnections(', '.join(sList))
         pList_lines = splitConnections(', '.join(pList))
@@ -1058,6 +1086,8 @@ def display_nodes_status(elements, day):
                 f"Overall Population status for Day: {day}"]),
             html.P([html.I(className="bi bi-link pe-1", style={"color": "white", "margin-right": "5px"}),
                 f"Average Connections: {str(avgConnections)}"]),  
+            html.P([html.I(className="bi bi-link pe-1", style={"color": "white", "margin-right": "5px"}),
+                f"Overall Average Connections: {str(overallConnections)}"]),  
             html.P([html.I(className="fa-solid fa-chart-line", style={"color": "white", "margin-right": "5px"}),
                 f"Infection Rate At Day {day}: {dayInfectionRateList[day-1]}%"]),  
             html.P([html.I(className="fa-solid fa-chart-line", style={"color": "white", "margin-right": "5px"}),
@@ -1164,7 +1194,8 @@ def update_stylesheet(elements):
 
 
 
-@app.callback(Output('animated-network', 'elements'),
+@app.callback([Output('animated-network', 'elements'),
+              Output('animation-day', 'children')],
               [Input('interval-component', 'n_intervals'),
                Input('cytoscape', 'elements'),
                Input('checkbox-list', 'value'),
@@ -1192,23 +1223,21 @@ def animate_network(n, elements, checkbox, selected_node):
               generated, an error message is returned.
     """
     global dailyNetwork, current_day
+    networkday = current_day
     if dailyNetwork is None:
-        return [{'data': {'id': 'Error', 'label': f"Generate Network to Start"}}]
+        return [{'data': {'id': 'Error', 'label': f"Generate Network to Start"}}], f"Current Day: {networkday}"
     else:
         # Retrieve the network for the current day
         network = dailyNetwork.getNetworkByDay(str(current_day))
         if network is None:
-            return [{'data': {'id': 'Error', 'label': f"Generate Network to Start"}}]
-        
+            return [{'data': {'id': 'Error', 'label': f"Generate Network to Start"}}], f"Current Day: {networkday}"
         # Process the network based on selected node and checkbox values
         elements = processNetwork(network, selected_node, checkbox)
-        
-        # Increment the current day for the next interval
-        current_day += 1
-        if current_day > len(dailyNetwork.networks):  # Reset after reaching the last day
-            current_day = 1
-        
-    return elements
+        if current_day == len(dailyNetwork.networks):
+            current_day = 1 
+        else:
+            current_day += 1
+    return elements, f"Current Day: {networkday}"
 
 @app.callback(
     Output('animated-network', 'stylesheet'),
@@ -1278,28 +1307,6 @@ def update_stylesheet2(elements):
 
     return stylesheet
 
-
-@app.callback(
-    Output('animation-day', 'children'),
-    Input('interval-component', 'n_intervals')
-)
-def update_population(n):
-    """
-    Callback function to update and display the current day of the animation.
-
-    This function is triggered at regular intervals (via the 'interval-component') 
-    and updates the displayed day based on the current value of the global 
-    `current_day` variable.
-
-    Parameters:
-        n (int): The number of intervals passed, used as a trigger for the callback.
-        
-    Returns:
-        str: A string representing the current day, formatted as "Current Day: X", 
-             where X is the value of the `current_day` variable.
-    """
-    global current_day
-    return f"Current Day: {current_day}"
 
 
 @app.callback(
@@ -1519,10 +1526,76 @@ def update_graph(elements):
         return plotDistributionSubPlot()
     else:
         return distributionSubPlot
-
-
-
     
+
+@app.callback(
+    Output('plotly-graph8', 'figure'),
+    [Input('cytoscape', 'elements')]
+)
+def update_graph(elements):
+    """
+    Callback function to update the degreeVsInfection Plot based on changes to 
+    the Cytoscape elements.
+
+    This function is triggered when the elements of the Cytoscape graph are 
+    updated. It updates the degreeVsInfection Plot to reflect the latest data, 
+    returning a figure that can be displayed in the corresponding graph component.
+
+    Parameters:
+        elements (list): The elements of the Cytoscape graph, used for checking 
+                         if the network has been generated.
+
+    Returns:
+        dict: A Plotly figure in dictionary format, representing the updated 
+              count plot. If the plot is not available, it returns a placeholder 
+              graph with the title "Graph Not Available".
+    """
+    global degreeVsInfectionPlot
+    if degreeVsInfectionPlot is None:
+        return {
+            'data': [],
+            'layout': {
+                'title': 'Graph Not Available'
+            }
+        }
+    else:
+        return degreeVsInfectionPlot
+    
+
+ 
+@app.callback(
+    Output('plotly-graph9', 'figure'),
+    [Input('cytoscape', 'elements')]
+)
+def update_graph(elements):
+    """
+    Callback function to update the True Positive rate Plot based on changes to 
+    the Cytoscape elements.
+
+    This function is triggered when the elements of the Cytoscape graph are 
+    updated. It updates the True Positive rate Plot to reflect the latest data, 
+    returning a figure that can be displayed in the corresponding graph component.
+
+    Parameters:
+        elements (list): The elements of the Cytoscape graph, used for checking 
+                         if the network has been generated.
+
+    Returns:
+        dict: A Plotly figure in dictionary format, representing the updated 
+              count plot. If the plot is not available, it returns a placeholder 
+              graph with the title "Graph Not Available".
+    """
+    global truePositiveRatePlot
+    if truePositiveRatePlot is None:
+        return {
+            'data': [],
+            'layout': {
+                'title': 'Graph Not Available'
+            }
+        }
+    else:
+        return truePositiveRatePlot
+
 @app.callback(
     [Output('popup-currGraph1', 'figure'),
      Output('popup-currGraph2', 'figure'),
@@ -1755,7 +1828,10 @@ def renameFile():
      Output('input-age-2', 'value'),
      Output('input-age-3', 'value'),
      Output('input-age-4', 'value'),
-     Output('input-age-5', 'value')],
+     Output('input-age-5', 'value'),
+     Output('input-age-6', 'value'),
+     Output('input-age-7', 'value'),
+     Output('input-age-8', 'value')],
     [Input('dropdown-1', 'value'),
      Input('slider-2', 'value')]
 )
@@ -1779,9 +1855,9 @@ def update_output(country, year):
     """
     if country != 'Country' and country is not None:
         proportion = generateProportion(country, year)
-        return proportion[0], proportion[1], proportion[2], proportion[3], proportion[4]
+        return proportion[0], proportion[1], proportion[2], proportion[3], proportion[4], proportion[5], proportion[6], proportion[7]
     else:
-        return 20, 20, 20, 20, 20
+        return 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5
 
 
 
@@ -1791,9 +1867,12 @@ def update_output(country, year):
      Input('input-age-2', 'value'),
      Input('input-age-3', 'value'),
      Input('input-age-4', 'value'),
-     Input('input-age-5', 'value')],
+     Input('input-age-5', 'value'),
+     Input('input-age-6', 'value'),
+     Input('input-age-7', 'value'),
+     Input('input-age-8', 'value')],
 )
-def validate_inputs(age1, age2, age3, age4, age5):
+def validate_inputs(age1, age2, age3, age4, age5, age6, age7, age8):
     """
     Validate the sum of the age group proportions and provide feedback.
 
@@ -1803,11 +1882,14 @@ def validate_inputs(age1, age2, age3, age4, age5):
     100, the feedback is displayed in red with a message indicating the error.
 
     Args:
-        age1 (int): The proportion for the first age group.
-        age2 (int): The proportion for the second age group.
-        age3 (int): The proportion for the third age group.
-        age4 (int): The proportion for the fourth age group.
-        age5 (int): The proportion for the fifth age group.
+        age1 (float): The proportion for the first age group.
+        age2 (float): The proportion for the second age group.
+        age3 (float): The proportion for the third age group.
+        age4 (float): The proportion for the fourth age group.
+        age5 (float): The proportion for the fifth age group.
+        age6 (float): The proportion for the sixth age group.
+        age7 (float): The proportion for the seventh age group.
+        age8 (float): The proportion for the eigth age group.
 
     Returns:
         tuple: A tuple containing an HTML `Span` element that displays the total sum and
@@ -1815,13 +1897,16 @@ def validate_inputs(age1, age2, age3, age4, age5):
                or red if the total does not sum to 100%.
     """
     # Handle None values (initial state)
-    age1 = int(age1) if age1 is not None else 0
-    age2 = int(age2) if age2 is not None else 0
-    age3 = int(age3) if age3 is not None else 0
-    age4 = int(age4) if age4 is not None else 0
-    age5 = int(age5) if age5 is not None else 0
+    age1 = float(age1) if age1 is not None else 0
+    age2 = float(age2) if age2 is not None else 0
+    age3 = float(age3) if age3 is not None else 0
+    age4 = float(age4) if age4 is not None else 0
+    age5 = float(age5) if age5 is not None else 0
+    age6 = float(age6) if age6 is not None else 0
+    age7 = float(age7) if age7 is not None else 0
+    age8 = float(age8) if age8 is not None else 0
 
-    total = age1 + age2 + age3 + age4 + age5
+    total = age1 + age2 + age3 + age4 + age5 + age6 + age7 + age8
     feedback = f"Total: {total}%"
     if total != 100:
         feedback += " (Invalid! Sum to 100%)"

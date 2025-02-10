@@ -6,6 +6,9 @@ from scipy.stats import lognorm, norm
 from plotly.subplots import make_subplots
 import os
 import pandas as pd
+import plotly.graph_objects as go
+from collections import Counter, defaultdict
+from sklearn.metrics import precision_score, recall_score
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def plotResult(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts,infected_counts,recovered_counts):
@@ -146,7 +149,7 @@ def plotAgeGroup(inputPopulation, specificProportion):
         inputPopulation (int): Total population size.
         specificProportion (list): Percentage distribution of population across age groups 
                                    in the following order: 
-                                   ['< 25', '25 - 44', '45 - 64', '65 - 74', '> 74'].
+                                   ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '>70'].
 
     Returns:
         tuple: A Plotly pie chart figure and the adjusted population distribution across 
@@ -166,11 +169,14 @@ def plotAgeGroup(inputPopulation, specificProportion):
 
     # specificProportion = [28, 35, 24, 8, 5] percentage of each age group
     data = {
-    '< 25':  round(inputPopulation*specificProportion[0]/100),
-    '25 - 44':  round(inputPopulation*specificProportion[1]/100),
-    '45 - 64':  round(inputPopulation*specificProportion[2]/100),
-    '65 - 74':  round(inputPopulation*specificProportion[3]/100),
-    '> 74': round(inputPopulation*specificProportion[4]/100),
+    '0-9':  round(inputPopulation*specificProportion[0]/100),
+    '10-19':  round(inputPopulation*specificProportion[1]/100),
+    '20-29':  round(inputPopulation*specificProportion[2]/100),
+    '30-39':  round(inputPopulation*specificProportion[3]/100),
+    '40-49': round(inputPopulation*specificProportion[4]/100),
+    '50-59': round(inputPopulation*specificProportion[5]/100),
+    '60-69': round(inputPopulation*specificProportion[6]/100),
+    '>70': round(inputPopulation*specificProportion[7]/100),
     }
     ageGroupsDistribution = [v for v in data.values()]
     while(sum(ageGroupsDistribution)>inputPopulation): 
@@ -184,7 +190,7 @@ def plotAgeGroup(inputPopulation, specificProportion):
     common_props = dict(
         labels=categories,
         values=values,
-        marker=dict(colors=['#e60049','#FFA500', '#FFD700','#32CD32','#0bb4ff'])  # Custom color sequence
+        marker=dict(colors=['#e60049','#FFA500', '#FFD700','#32CD32','#0bb4ff','#FFC0CB','#00cfad','#A020F0'])  # Custom color sequence
     )
 
     # First trace: showing percentage outside
@@ -322,7 +328,7 @@ def plotCountConnections(connections):
         title="Count Plot of Connections",
         xaxis_title="Connections",
         yaxis_title="Count",
-        font=dict(size=16)
+        font=dict(size=16),
     )
     x_range = list(range(min(connections), max(connections)+1))
     # Ensure all x-axis labels are displayed
@@ -352,7 +358,7 @@ def plotIndiConnAgeGroup(data, id):
     common_props = dict(
         labels=categories,
         values=values,
-        marker=dict(colors=['#e60049','#FFA500', '#FFD700','#32CD32','#0bb4ff'])  # Custom color sequence
+        marker=dict(colors=['#e60049','#FFA500', '#FFD700','#32CD32','#0bb4ff','#FFC0CB','#00cfad','#A020F0'])  # Custom color sequence
     )
 
     # First trace: showing percentage outside
@@ -455,5 +461,248 @@ def plotDistributionSubPlot():
     fig.update_yaxes(title_text='Probability', row=1, col=3, range=[0, 1])
 
     # Show the plot
+    #fig.show()
+    return fig
+
+
+
+def plotDegreeVsInfection(dailyNetwork, population, days):
+    data = {
+        "node_id": [person for person in range(1, population+1)],
+        "connections": [-1 for person in range(1, population+1)],
+        "infection_status": [None for person in range(1, population+1)],  # None means never infected
+        "day_of_spread": ['-' for person in range(1, population+1)],
+    }
+    pool = []
+    for person in range(1, population+1):
+        sumConnections = 0
+        infection = None
+        for day in range(1, days+1):
+            network = dailyNetwork.getNetworkByDay(day)
+            currNode = network.getNode(person)
+            status = currNode.status
+            sumConnections+=len(currNode.connections)
+            if (status == 'P' or status == 'A') and day != 1: # at the point where the person is infected
+                node = prev
+                # scatter point to indicate day of infection -> node_id: 1, connections: 1, infection_status: 2, day_of_spread: -
+                data["connections"][person-1] = len(node.connections) # connection the person came into contact with
+                data["infection_status"][person-1] = day # the day where person transition to a hiddenspreader
+                
+                # scatter point to indicate as hidden spreader -> node_id: 1, connections: 1, infection_status: A, day_of_spread: -
+                data["node_id"].append(person)
+                data["connections"].append(len(node.connections))
+                data["infection_status"].append(status)
+                data['day_of_spread'].append('-')
+
+                count = 0
+                # checking yesterday node connections if there only hidden spreaders(A/P) and non infected
+                for n in prev.connections: 
+                    status = prevNetwork.getNode(n).status
+                    if status != 'I' and status != 'R': 
+                        count+=1
+                if count == len(prev.connections): # if all node connections are only hidden spreaders(A/P) and non infected(S)
+                    # embed day of spread
+                    # pool = [(1,2),(2,2),(3,2)....] contains(A/P/S)
+                    pool.extend([(p,day-1) for p in prev.connections])  # add it to the potential hidden spreader pool
+                infection =  status
+                break
+            prev = currNode
+            prevNetwork = network
+        if infection == None:
+            data["infection_status"][person-1] = 'S'
+            data['connections'][person-1] = sumConnections / days
+
+    # Create a dictionary to store the letter and corresponding values
+    spreadHistory = defaultdict(list)
+
+    # Loop through the list and store the values for each letter
+    for person, day in pool:
+        spreadHistory[person].append(day)
+        spreadHistory[person].sort()
+        
+    # Create the desired output for letters that appear more than once
+    potentialSpreaders = [(person, sorted(set(days))) for person, days in spreadHistory.items()]
+
+    for spreader, daysList in potentialSpreaders:
+        if spreader in data['node_id']:
+            index = data['node_id'].index(spreader)
+            connections = data['connections'][index]
+            infection_status = 'H'
+            # Append the new data to each list
+            data['node_id'].append(spreader)
+            data['connections'].append(connections)
+            data['infection_status'].append(infection_status)
+            data['day_of_spread'].append(','.join(map(str, daysList)))
+
+    df = pd.DataFrame(data)
+
+    hiddenSpreadersGroup = df[df['infection_status'].isin(['A', 'P'])]
+    potentialHiddenSpreadersGroup = df[df['infection_status'] == 'H']
+
+    # Create a list to hold the new rows
+    new_rows = []
+    # Loop through hidden spreaders group to check if they were correctly identified
+    for _, row in hiddenSpreadersGroup.iterrows():
+        node_id = row['node_id']
+        connections = row['connections']
+        
+        # Check if the node_id is in the potential hidden spreaders group
+        potential_match = potentialHiddenSpreadersGroup[potentialHiddenSpreadersGroup['node_id'] == node_id]
+        
+        if not potential_match.empty:
+            day_of_spread = potential_match['day_of_spread'].values[0]
+            # True Positive (TP): Correct prediction -> Actual hidden spreaders ('A', 'P') that are correctly predicted as potential hidden spreaders ('H').
+            new_row = {'node_id': node_id, 'connections': connections, 'infection_status': 'O', 'day_of_spread': day_of_spread}
+        else:
+            # False Negative (FN): Missed prediction -> Actual hidden spreaders ('A', 'P') that are not predicted as hidden spreaders.
+            new_row = {'node_id': node_id, 'connections': connections, 'infection_status': 'X', 'day_of_spread': '-'}
+        # Append the new row to the list of new rows
+        new_rows.append(new_row)
+
+    # Create a DataFrame from the new rows
+    new_df = pd.DataFrame(new_rows)
+
+    # Concatenate the new rows to the original DataFrame
+    df = pd.concat([df, new_df], ignore_index=True)
+
+    # Map infection status to categories for visualization purposes
+    y_levels = {
+        'Remained Susceptible': days + 10,                   # High Y for "Remained S"
+        'Hidden Spreader': days + 20,                        # Even higher Y for "Hidden Spreaders"
+        'Potential Hidden Spreader': days + 30,              # Even higher Y for "Potential Hidden Spreader"
+        'Missed Prediction Hidden Spreader': days + 40,      # Even higher Y for "Missed prediction Hidden Spreader"
+        'Correct Prediction Hidden Spreader': days + 50      # Even higher Y for "Correct prediction Hidden Spreader"
+    }
+
+    # Apply fixed infection day based on infection status
+    # Set y-axis positions for different categories in the graph
+    df['infection_day_fixed'] = df['infection_status'].apply(
+        lambda x: y_levels['Remained Susceptible'] if x == "S" else
+        y_levels['Hidden Spreader'] if x in ('A', 'P') else
+        y_levels['Potential Hidden Spreader'] if x == 'H' else
+        y_levels['Missed Prediction Hidden Spreader'] if x == 'X' else
+        y_levels['Correct Prediction Hidden Spreader'] if x == 'O' else x
+    )
+
+    # Classify the nodes into categories based on their infection status
+    df['category'] = df['infection_status'].apply(
+        lambda x: "Remained Susceptible" if x == "S" else
+        "Hidden Spreader" if x in ('A', 'P') else
+        "Potential Hidden Spreader" if x == 'H' else
+        "Missed Prediction Hidden Spreader" if x == 'X' else
+        "Correct Prediction Hidden Spreader" if x == 'O' else
+        "Early Infection" if (isinstance(x, int) and x < 10) else "Late Infection"
+    )
+
+    # Create hover text based on infection status
+    df["hover_text"] = df.apply(
+        lambda row: f"Node {row['node_id']}, connections: {row['connections']}, Infection Day: {row['infection_day_fixed']}"    # scatter points of hidden spreaders day of infection
+        if isinstance(row['infection_status'], int) else
+        f"Node {row['node_id']}, Connections: {row['connections']}, Day(s) of spread: {row['day_of_spread']}"  # scatter points of hidden spreaders day of spread
+        if row['infection_status'] == 'O' else
+        f"Node {row['node_id']}, Connections: {row['connections']}, In Infectious Community: ✅" # scatter points of Missed hidden spreaders 
+        if row['infection_status'] == 'X' else
+        f"Node {row['node_id']}, Connections: {row['connections']}, Infection Status: {row['infection_status']}" ,
+        axis=1
+    )
+
+    # Grouping by (connections, infection_day_fixed) and concatenating node info (sorted by node_id)
+    point_info = defaultdict(list)
+    for node_id, deg, day, text in zip(df['node_id'], df['connections'], df['infection_day_fixed'], df['hover_text']):
+        point_info[(deg, day)].append((node_id, text))  # Store as tuple (node_id, text) for sorting
+
+    # Sort by node_id and join with HTML line breaks
+    df["grouped_hover_text"] = df.apply(
+        lambda row: "<br>".join(text for _, text in sorted(point_info[(row['connections'], row['infection_day_fixed'])])),
+        axis=1
+    )
+
+    # Scatter plot with go.Scatter
+    fig = go.Figure()
+
+    # Map the infection status to colors manually
+    color_map = {
+        "Correct Prediction Hidden Spreader":'green',
+        "Missed Prediction Hidden Spreader": 'black',
+        "Potential Hidden Spreader":'pink',
+        "Hidden Spreader": 'purple',
+        "Remained Susceptible": 'blue',
+        "Late Infection": 'red',
+        "Early Infection": 'orange',
+    }
+    # Add traces for each category
+    for category, color in color_map.items():
+        category_df = df[df['category'] == category]
+        
+        fig.add_trace(go.Scatter(
+            x=category_df["connections"],
+            y=category_df["infection_day_fixed"],
+            mode='markers',
+            marker=dict(color=color),
+            text=category_df["grouped_hover_text"],  # Hover text
+            hoverinfo="text",  # Show text on hover
+            name=category  # Add the category to the legend
+        ))
+
+    # Update layout to include the legend
+    fig.update_layout(
+        title="Hidden Spreader Prediction",
+        xaxis_title="Average Number of Connections",
+        yaxis_title="Infection Day (or Never Infected)",
+        yaxis=dict(
+            tickvals=list(range(0, days + 60, 10)) + [val for val in y_levels.values()],
+            ticktext=[str(i) for i in range(0, days + 10, 10)] + [key for key in y_levels.keys()]
+        ),
+        showlegend=True  # Enable legend display
+    )
+
+    truePositiveRateFig = computeConfusionMatrixFromDF(df)
+
+    # Show the figure
+    #fig.show()
+    return fig, truePositiveRateFig
+
+
+
+
+
+def computeConfusionMatrixFromDF(df):
+    # Initialize confusion matrix counts
+    TP = FN = 0
+
+    # Compute confusion matrix for model evaluation (TP, FN)
+    hidden_spreaders = df[df['infection_status'].isin(['A', 'P'])]
+    potential_spreaders = df[df['infection_status'] == 'H']
+    
+    merged = hidden_spreaders.merge(
+        potential_spreaders[['node_id']], 
+        on='node_id', 
+        how='left', 
+        indicator=True
+    )
+    
+    TP = (merged['_merge'] == 'both').sum()          # True Positives: Correctly Predicted Hidden Spreader
+    FN = (merged['_merge'] == 'left_only').sum()     # False Negatives: Missed Hidden Spreader
+    truePositiveRate = np.array([[TP], [FN]])  # Only one column: Predicted Hidden
+    
+    precision = round(TP / (TP + FN + 1e-6), 2)  # Prevent division by zero
+
+    # Create confusion matrix plot
+    fig = go.Figure(data=go.Heatmap(
+        z=truePositiveRate,
+        x=['Predicted: Hidden'],
+        y=['Actual: Hidden', 'Actual: Missed'],
+        colorscale='Blues',
+        text=truePositiveRate,
+        texttemplate='%{text}',
+        showscale=True
+    ))
+    
+    fig.update_layout(
+        title=f"True Positive Rate({precision:.2f})",
+        font=dict(size=16, color="black")
+    )
+
+    # Show the figure
     #fig.show()
     return fig

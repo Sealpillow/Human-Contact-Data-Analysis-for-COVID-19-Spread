@@ -2,7 +2,7 @@ import numpy as np
 import os 
 import math
 from scipy.integrate import quad
-from plotGraph import plotResult, plotStackBar, plotAgeGroup, plotInfectionRate
+from plotGraph import plotResult, plotStackBar, plotAgeGroup, plotInfectionRate, plotDegreeVsInfection
 from scipy.stats import lognorm, norm
 from Network import Network
 from Node import Node
@@ -12,6 +12,7 @@ import json
 import sys
 import jsonpickle
 import csv
+from collections import Counter
 statusPath = "./data/status.json"
 
 def getData(name, days):
@@ -100,30 +101,31 @@ def getAgeGroupConnections(age):
 
     Parameters:
     - age (int): The age of the individual.
-
+    0-9, 10-19, 20-29, 30-39, 40-49, 50-59, 60-69, >70
     Returns:
     - float: The average number of connections for the given age group.
     """
     
-    # Check if the individual's age falls under the "young" age group (< 25 years)
-    if age < 25:
-        return 0.0856  
-    
-    # Check if the individual's age falls under the "young adult" age group (25–44 years)
-    elif 25 <= age <= 44:
-        return 0.226  
-    
-    # Check if the individual's age falls under the "middle-aged" group (45–64 years)
-    elif 45 <= age <= 64:
-        return 0.227  
-    
-    # Check if the individual's age falls under the "senior" group (65–74 years)
-    elif 65 <= age <= 74:
-        return 0.15 
-    
-    # If the individual's age is greater than 74, return the value for the "elderly" group
-    else:
-        return 0.128  
+    if age < 5:
+        return 10.21
+    elif 5 <= age <= 9:
+        return 14.81   
+    elif 10 <= age <= 14:
+        return 18.22
+    elif 15 <= age <= 19:
+        return 17.58  
+    elif 20 <= age <= 29:
+        return 13.57
+    elif 30 <= age <= 39:
+        return 14.14 
+    elif 40 <= age <= 49:
+        return 13.83 
+    elif 50 <= age <= 59:
+        return 12.30 
+    elif 60 <= age <= 69:
+        return 9.21 
+    else: # If the individual's age is greater than and equal to 70
+        return 6.89  
 
 
 
@@ -589,17 +591,20 @@ def simulate(seed, population, days, randomNumPeople):
             json.dump(status, file, indent=4)  # Save the updated progress
 
     # Plot the results
+    degreeVsInfectionPlot, truePositiveRatePlot = plotDegreeVsInfection(dailyNetwork, population, days)
     infectionPlot = plotResult(days, susceptible_counts, presymptomatic_counts, asymptomatic_counts, infected_counts, recovered_counts)
     infectionRatePlot, overallInfectionRate, dayInfectionRateList = plotInfectionRate(days, susceptible_counts)
     stackBarPlot = plotStackBar(days, susceptible_counts, presymptomatic_counts, asymptomatic_counts, infected_counts, recovered_counts)
+    avgDailyConnectionsList = dailyNetwork.getAvgDailyConnectionsList()
 
-    return dailyNetwork, infectionPlot, stackBarPlot, infectionRatePlot, overallInfectionRate, dayInfectionRateList
+
+    return dailyNetwork, infectionPlot, stackBarPlot, infectionRatePlot, degreeVsInfectionPlot, truePositiveRatePlot, overallInfectionRate, dayInfectionRateList, avgDailyConnectionsList
 
 
 def main():
     """
     The main function to initialize parameters, generate contact networks, and simulate the spread of an infectious disease within a population.
-    This function reads command-line arguments to configure the simulation, generates the contact network based on the chosen model (e.g., 'same', 'unique', 'complete'),
+    This function reads command-line arguments to configure the simulation, generates the contact network based on the chosen model (e.g., 'same', 'dynamic', 'complete'),
     and runs the simulation over a specified number of days. During the simulation, various factors like vaccination, isolation, and age groups are considered.
     The simulation results, including the network data, infection statistics, and plots, are serialized into JSON format and printed to the console for further processing by the Dash app.
 
@@ -615,7 +620,7 @@ def main():
       - affected (int): The number of initial infected individuals.
       - interventionDay (int): The day on which vaccination or other interventions start.
       - percentVac (float): The percentage of individuals vaccinated per day.
-      - radio (str): The type of connection model used ('same', 'unique', 'complete').
+      - radio (str): The type of connection model used ('same', 'dynamic', 'complete').
       - proportion (list of ints): The age group proportions in the population.
       - checkbox (list of str): A list of additional options (e.g., 'age', 'isolate').
 
@@ -632,6 +637,18 @@ def main():
     """
     global dailyNetwork, population, days, seed, overallReproNum, p, interventionDay, checkbox, vaccinatedHistoryList, percentVac
 
+    '''
+    seed = 123
+    overallReproNum = 3.5
+    population = 200
+    days = 100
+    affected = 5
+    interventionDay = 0
+    percentVac = 1
+    radio = 'same'
+    proportion = [12.5,12.5,12.5,12.5,12.5,12.5,12.5,12.5]
+    checkbox = []
+    '''
     # Read command-line arguments to initialize simulation parameters
     seed = int(sys.argv[1])  # Set the random seed for reproducibility
     overallReproNum = float(sys.argv[2])  # Set the overall reproduction number
@@ -641,9 +658,9 @@ def main():
     interventionDay = int(sys.argv[6])  # Set the day when vaccination starts
     percentVac = float(sys.argv[7])  # Set the percentage of the population vaccinated per day
     radio = sys.argv[8]  # Set the connection model type
-    proportion = [int(sys.argv[9]), int(sys.argv[10]), int(sys.argv[11]), int(sys.argv[12]), int(sys.argv[13])]  # Age group proportions
-    checkbox = sys.argv[14:] if len(sys.argv) > 14 else []  # Additional options (e.g., isolate, age)
-
+    proportion = [float(sys.argv[9]), float(sys.argv[10]), float(sys.argv[11]), float(sys.argv[12]), float(sys.argv[13]), float(sys.argv[14]), float(sys.argv[15]), float(sys.argv[16])]  # Age group proportions
+    checkbox = sys.argv[17:] if len(sys.argv) > 17 else []  # Additional options (e.g., isolate, age)
+    
     vaccinatedHistoryList = []  # List to track individuals who have been vaccinated
 
     # Set the proportion of asymptomatic infected cases (global variable)
@@ -653,8 +670,8 @@ def main():
     populationPie, ageGroupsDistribution = plotAgeGroup(population, proportion)
 
     # Choose the appropriate network generation model based on the 'radio' option
-    if radio == 'unique': 
-        GenerateInfectiousUniqueConnections(population, days, seed, ageGroupsDistribution, checkbox)  # Generate unique contacts each day
+    if radio == 'dynamic': 
+        GenerateInfectiousUniqueConnections(population, days, seed, ageGroupsDistribution, checkbox)  # Generate dynamic contacts each day
     elif radio == 'same':
         GenerateInfectiousSameConnections(population, days, seed, ageGroupsDistribution, checkbox)  # Generate the same contacts each day
     elif radio == 'complete':
@@ -664,7 +681,7 @@ def main():
     dailyNetwork = getData('infectious.csv', days)
 
     # Run the simulation and get the results
-    dailyNetwork, infectionPlot, stackBarPlot, infectionRatePlot, overallInfectionRate, dayInfectionRateList = simulate(seed, population, days, affected)
+    dailyNetwork, infectionPlot, stackBarPlot, infectionRatePlot, degreeVsInfectionPlot, truePositiveRatePlot, overallInfectionRate, dayInfectionRateList, avgDailyConnectionsList = simulate(seed, population, days, affected)
 
     # Prepare the results in a dictionary
     result = {
@@ -674,8 +691,11 @@ def main():
         "populationPie": populationPie.to_json(),  # Serialize the population distribution pie chart to JSON
         "stackBarPlot": stackBarPlot.to_json(),  # Serialize the stacked bar plot to JSON
         "infectionRatePlot": infectionRatePlot.to_json(),  # Serialize the infection rate plot to JSON
+        "degreeVsInfectionPlot": degreeVsInfectionPlot.to_json(),
+        "truePositiveRatePlot" : truePositiveRatePlot.to_json(),
         "overallInfectionRate": overallInfectionRate,  # Overall infection rate for the entire simulation
-        "dayInfectionRateList": dayInfectionRateList  # List of infection rates for each day
+        "dayInfectionRateList": dayInfectionRateList,  # List of infection rates for each day
+        "avgDailyConnectionsList" : avgDailyConnectionsList
     }
 
     # Print the results as a JSON string
