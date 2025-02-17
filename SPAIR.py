@@ -165,19 +165,19 @@ def F_P(d):
     meanP = 1.43                                            # Mean of the underlying normal distribution
     stdP = 0.66                                             # Standard deviation of the underlying normal distribution 
     return lognorm(s=meanP, scale=np.exp(stdP)).cdf(d)
-    #return lognorm.cdf(np.arange(1,41)/4.17,s=0.66)[d]
+
 
 def F_I(d):
     meanI = 8.8                                             # Mean
     stdI = 3.88                                             # Standard deviation
     return norm(loc=meanI, scale=stdI).cdf(d) #
-    #return norm.cdf((np.arange(1,41)-8.82)/3.88)[d]
+
 
 def F_A(d):
     meanA = 20.0                                            # Mean
     stdA = 5.0                                              # Standard deviation
     return norm(loc=meanA, scale=stdA).cdf(d) 
-    #return norm.cdf((np.arange(1,41)-20)/5)[d]
+
 
 def Beta(day, person):
     """
