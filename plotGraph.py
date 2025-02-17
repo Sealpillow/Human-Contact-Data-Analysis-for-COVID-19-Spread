@@ -690,8 +690,8 @@ def computeConfusionMatrixFromDF(df):
     # Create confusion matrix plot
     fig = go.Figure(data=go.Heatmap(
         z=truePositiveRate,
-        x=['Predicted: Hidden'],
-        y=['Actual: Hidden', 'Actual: Missed'],
+        x=['Actual: Hidden'],
+        y=['Prediction: Hidden', 'Prediction: Missed'],
         colorscale='Blues',
         text=truePositiveRate,
         texttemplate='%{text}',
@@ -701,6 +701,8 @@ def computeConfusionMatrixFromDF(df):
     fig.update_layout(
         title=f"True Positive Rate({precision:.2f})",
         font=dict(size=16, color="black")
+        #width = 600,
+        #height = 600
     )
 
     # Show the figure
