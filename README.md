@@ -225,3 +225,7 @@ Assuming prior knowledge of hidden spreaders within the model, we can test predi
 - Late Infection: The node became infected after day 10.
 - Early Infection: The node became infected before day 10.
 
+Note: You may want to edit the limit or remove the limit in 'DashApp.py'. A limit is added so that this program can be run in the cloud.
+```python
+dcc.Input(id='population-input', type='number', value=1000, min = 20, placeholder='Enter population', className='dcc.Input',
+```
