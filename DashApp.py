@@ -70,7 +70,7 @@ app.layout = html.Div([
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),  
 
                 html.P([f"Population",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Size of population")]),
-                dcc.Input(id='population-input', type='number', value=1000, min = 20, max = 200, placeholder='Enter population', className='dcc.Input',
+                dcc.Input(id='population-input', type='number', value=100, min = 20, max = 100, placeholder='Enter population', className='dcc.Input',
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
                 html.P([f"Days",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Number of simulation days")]),
