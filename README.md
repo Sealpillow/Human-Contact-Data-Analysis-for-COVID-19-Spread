@@ -185,6 +185,10 @@ Step 2: Copy this to browser to access application
 ```
 http://127.0.0.1:8050/
 ```
+Note: You may want to edit the limit or remove the limit in 'DashApp.py'. A limit is added so that this program can be run in the cloud.
+```python
+dcc.Input(id='population-input', type='number', value=1000, min = 20, max=200, placeholder='Enter population', className='dcc.Input',
+```
 Step 3: Select desired parameters and click generate </br>
 <img src="https://github.com/user-attachments/assets/efdfc460-f80a-40e2-a20c-b516f262b70a" alt="image" width="250"/> </br>
 
@@ -225,7 +229,3 @@ Assuming prior knowledge of hidden spreaders within the model, we can test predi
 - Late Infection: The node became infected after day 10.
 - Early Infection: The node became infected before day 10.
 
-Note: You may want to edit the limit or remove the limit in 'DashApp.py'. A limit is added so that this program can be run in the cloud.
-```python
-dcc.Input(id='population-input', type='number', value=1000, min = 20, placeholder='Enter population', className='dcc.Input',
-```
