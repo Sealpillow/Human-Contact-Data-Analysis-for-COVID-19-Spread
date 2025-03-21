@@ -8,7 +8,6 @@ import os
 import pandas as pd
 import plotly.graph_objects as go
 from collections import Counter, defaultdict
-from sklearn.metrics import precision_score, recall_score
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def plotResult(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts,infected_counts,recovered_counts):
