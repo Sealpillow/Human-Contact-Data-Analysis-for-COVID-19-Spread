@@ -464,8 +464,6 @@ def plotDistributionSubPlot():
     #fig.show()
     return fig
 
-
-
 def plotDegreeVsInfection(dailyNetwork, population, days):
     data = {
         "node_id": [person for person in range(1, population+1)],
@@ -496,14 +494,17 @@ def plotDegreeVsInfection(dailyNetwork, population, days):
 
                 count = 0
                 # checking yesterday node connections if there only hidden spreaders(A/P) and non infected
+                validStates = []
                 for n in prev.connections: 
                     status = prevNetwork.getNode(n).status
-                    if status != 'I' and status != 'R': 
+                    if status != 'I': 
                         count+=1
+                        if status != 'R':
+                            validStates.append(n) # contain only S, A, P 
                 if count == len(prev.connections): # if all node connections are only hidden spreaders(A/P) and non infected(S)
                     # embed day of spread
                     # pool = [(1,2),(2,2),(3,2)....] contains(A/P/S)
-                    pool.extend([(p,day-1) for p in prev.connections])  # add it to the potential hidden spreader pool
+                    pool.extend([(p,day-1) for p in validStates])  # add it to the potential hidden spreader pool
                 infection =  status
                 break
             prev = currNode
@@ -648,7 +649,7 @@ def plotDegreeVsInfection(dailyNetwork, population, days):
     fig.update_layout(
         title="Hidden Spreader Prediction",
         xaxis_title="Average Number of Connections",
-        yaxis_title="Infection Day (or Never Infected)",
+        yaxis_title="Infection Day, Prediction and Result",
         yaxis=dict(
             tickvals=list(range(0, days + 60, 10)) + [val for val in y_levels.values()],
             ticktext=[str(i) for i in range(0, days + 10, 10)] + [key for key in y_levels.keys()]
