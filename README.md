@@ -187,7 +187,7 @@ http://127.0.0.1:8050/
 ```
 Note: You may want to edit the limit or remove the limit in 'DashApp.py'. A limit is added so that this program can be run in the cloud.
 ```python
-dcc.Input(id='population-input', type='number', value=1000, min = 20, max=200, placeholder='Enter population', className='dcc.Input',
+dcc.Input(id='population-input', type='number', value=100, min = 20, max=200, placeholder='Enter population', className='dcc.Input',
 ```
 Step 3: Select desired parameters and click generate </br>
 <img src="https://github.com/user-attachments/assets/a1550992-70eb-4bea-9571-8ae3eaff4f3f" alt="image" width="250"/> </br>
