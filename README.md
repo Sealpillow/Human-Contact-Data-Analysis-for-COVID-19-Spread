@@ -212,14 +212,14 @@ Step 9: Scroll futher down and you can see more information on the status of the
 ![image](https://github.com/user-attachments/assets/dd4ed916-679e-4aed-9115-50a5b28ac02b)
 
 Step 10: Observe the SPAIR Infection model Prediction Result </br>
-![newplot (17)](https://github.com/user-attachments/assets/bd133f0b-1ec4-412e-aa79-6e0c2641f09b)
+![newplot (59)](https://github.com/user-attachments/assets/a7f08ddd-c46f-4187-9f02-f66564d5953a)
 
 Step 11: To Compare Different parameter result. Click the 'Compare Previous' Button. </br>
 A Popup window with graph will be open to compare the results </br>
-![image](https://github.com/user-attachments/assets/eeaf57ae-2af2-4869-a08d-9a6ad1e03726)
+![image](https://github.com/user-attachments/assets/6259d29c-7fd4-4758-8d19-de2149f3b1fa)
 
 Assuming prior knowledge of hidden spreaders within the model, we can test prediction methods and evaluate their effectiveness, providing a framework that, when applied in real-world scenarios
-![newplot (44)](https://github.com/user-attachments/assets/01c04e93-e1f8-47d2-80e6-ebf3c36a5d8f)
+![newplot (60)](https://github.com/user-attachments/assets/da1935e6-6873-4591-bda0-fc24b0771411)
 
 - Correct Prediction Hidden Spreader: Node whose infection status matched the prediction of being a hidden spreader.
 - Missed Prediction Hidden Spreader: Node incorrectly predicted not to be a hidden spreader but turned out to be one.
