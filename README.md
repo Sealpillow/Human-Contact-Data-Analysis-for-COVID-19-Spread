@@ -209,7 +209,7 @@ Step 8: Click on the node at network exploration to get information of the node 
 ![image](https://github.com/user-attachments/assets/ff1ae96f-c442-4112-8349-30dd69acc9bb) </br>
 
 Step 9: Scroll futher down and you can see more information on the status of the displayed network to identify potential hidden spreaders (Asymtomatic)</br>
-![image](https://github.com/user-attachments/assets/600ff08d-dbb5-4ccc-881f-9eb530a5c605)
+![image](https://github.com/user-attachments/assets/dd4ed916-679e-4aed-9115-50a5b28ac02b)
 
 Step 10: Observe the SPAIR Infection model Prediction Result </br>
 ![newplot (17)](https://github.com/user-attachments/assets/bd133f0b-1ec4-412e-aa79-6e0c2641f09b)
