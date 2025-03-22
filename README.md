@@ -190,7 +190,7 @@ Note: You may want to edit the limit or remove the limit in 'DashApp.py'. A limi
 dcc.Input(id='population-input', type='number', value=1000, min = 20, max=200, placeholder='Enter population', className='dcc.Input',
 ```
 Step 3: Select desired parameters and click generate </br>
-<img src="https://github.com/user-attachments/assets/efdfc460-f80a-40e2-a20c-b516f262b70a" alt="image" width="250"/> </br>
+<img src="https://github.com/user-attachments/assets/a1550992-70eb-4bea-9571-8ae3eaff4f3f" alt="image" width="250"/> </br>
 
 Step 4: Wait for the network to be generated </br>
 ![Recording2025-01-30002658-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/082119ae-e8c8-4f8c-8330-e9bcb7ee0aa3)
