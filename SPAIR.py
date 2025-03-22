@@ -11,6 +11,7 @@ import json
 import sys
 import jsonpickle
 import csv
+
 statusPath = "./data/status.json"
 
 def getData(name, days):
@@ -585,7 +586,7 @@ def simulate(seed, population, days, randomNumPeople):
             status = json.load(file)
             status['progress'] = round(day / days * 100)  # Update the progress percentage
 
-        with open(statusPath, 'w') as file:
+        with open(statusPath, 'w', encoding='utf-8') as file:
             json.dump(status, file, indent=4)  # Save the updated progress
 
     # Plot the results

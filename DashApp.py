@@ -65,7 +65,7 @@ app.layout = html.Div([
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),  
 
                 html.P([f"Population",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Size of population")]),
-                dcc.Input(id='population-input', type='number', value=100, min = 20, max=200, placeholder='Enter population', className='dcc.Input',
+                dcc.Input(id='population-input', type='number', value=1000, min = 20, placeholder='Enter population', className='dcc.Input',
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
                 html.P([f"Days",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Number of simulation days")]),
@@ -770,7 +770,6 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
             # Reset and rename files for storing status
             reset_file()
             renameFile()
-
             # Read the current version status from the file
             with open(statusPath, 'r') as file:
                 status = json.load(file)
@@ -804,12 +803,14 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
             status['currVer'] = currVer
             currVer = [html.P(f"{line}", style={'word-wrap': 'break-word','color':'black'}) for line in currVer]
             prevVer = [html.P(f"{line}", style={'word-wrap': 'break-word','color':'black'}) for line in status['prevVer']]
+
             # Save updated status to the file
-            with open(statusPath, 'w') as file:
+            with open(statusPath, 'w', encoding='utf-8') as file:
                 json.dump(status, file, indent=4)
 
             # Execute external program with provided inputs
             proportionList = [str(age1), str(age2), str(age3), str(age4), str(age5), str(age6), str(age7), str(age8)]
+            
             result = subprocess.run(
                 ['python', templatePath, str(seed), str(reproNum), str(population), str(days), str(affected), str(interventionDay), str(vacPercent), str(radio)] + proportionList + checkbox,
                 capture_output=True,
@@ -1778,7 +1779,7 @@ def reset_file():
         status['progress'] = 0  # New value for progress
         
 
-    with open(statusPath, 'w') as file:    
+    with open(statusPath, 'w', encoding='utf-8') as file:    
         # Write the updated content back to the file
         json.dump(status, file, indent=4)
 
