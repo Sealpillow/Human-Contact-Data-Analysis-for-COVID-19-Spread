@@ -510,7 +510,7 @@ def plotDegreeVsInfection(dailyNetwork, population, days):
             prevNetwork = network
         if infection == None:
             data["infection_status"][person-1] = 'S'
-            data['connections'][person-1] = sumConnections / days
+            data['connections'][person-1] = len(prev.connections)
 
     # Create a dictionary to store the letter and corresponding values
     spreadHistory = defaultdict(list)

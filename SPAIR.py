@@ -1,7 +1,6 @@
 import numpy as np
 import os 
 import math
-from scipy.integrate import quad
 from plotGraph import plotResult, plotStackBar, plotAgeGroup, plotInfectionRate, plotDegreeVsInfection
 from scipy.stats import lognorm, norm
 from Network import Network
@@ -12,7 +11,6 @@ import json
 import sys
 import jsonpickle
 import csv
-from collections import Counter
 statusPath = "./data/status.json"
 
 def getData(name, days):

@@ -1,10 +1,7 @@
 from math import floor
-import random
 import os
 import numpy as np
-import pandas as pd
 import csv
-from collections import defaultdict
 
 name = 'infectious.csv'
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -212,7 +209,7 @@ def generateConnectionsRandomly(population, rng, base_weighted_pool):
     connections_count = {i: 0 for i in range(1, population + 1)}
 
     # Generate required connections using uniform distribution (1-55)
-    required_connections = {person: rng.integers(1,18) for person in range(1, population + 1)}
+    required_connections = {person: rng.integers(1,19) for person in range(1, population + 1)}
 
     # Generate connections
     for person1 in range(1, population + 1):

@@ -9,16 +9,13 @@ import jsonpickle
 import plotly.io as pio
 import dash
 import plotly.graph_objects as go
-from waitress import serve
 from countryProportion import generateProportion
 from plotGraph import plotCountConnections,plotDistributionSubPlot, plotIndiConnAgeGroup
-import pandas as pd
-import numpy as np
 import shutil
-import time
 from generateTable import generate_contact_matrix_table,generate_vaccination_impact_contact_patterns_table
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+# templatePath = os.path.join(current_dir, "external_program.py")
 templatePath = os.path.join(current_dir, "SPAIR.py")
 statusPath = os.path.join(current_dir, "./data/status.json")
 
@@ -69,7 +66,7 @@ app.layout = html.Div([
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),  
 
                 html.P([f"Population",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Size of population")]),
-                dcc.Input(id='population-input', type='number', value=100, min = 20, max = 100, placeholder='Enter population', className='dcc.Input',
+                dcc.Input(id='population-input', type='number', value=1000, min = 20, placeholder='Enter population', className='dcc.Input',
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
                 html.P([f"Days",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Number of simulation days")]),
@@ -82,7 +79,7 @@ app.layout = html.Div([
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
                 html.P([f"Intervention Day",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "10px"},title="The day vaccination is implemented to population (Not on Day 1)")]),
-                dcc.Input(id='interventionDay-input', type='number', value=29, min = 2, placeholder='Enter Vaccination Intervention Day', className='dcc.Input',
+                dcc.Input(id='interventionDay-input', type='number', value=34, min = 2, placeholder='Enter Vaccination Intervention Day', className='dcc.Input',
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),          
 
                 html.P([f"Vaccination rate",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "10px"},title="The day vaccination is implemented to population (Not on Day 1)")]),
@@ -302,14 +299,14 @@ app.layout = html.Div([
                 html.H3("Vaccination Impact and Contact Patterns Across Age Groups", style={'margin-bottom': '15px', 'color': 'white'}),
                 generate_vaccination_impact_contact_patterns_table(),
                 dbc.Alert(id='tbl_out'),
-                html.H3("Probability Contact Matrix (Normalized by row)", style={'margin-bottom': '15px', 'color': 'white'}),
+                html.H3("Age Group Contact Matrix", style={'margin-bottom': '15px', 'color': 'white'}),
                 generate_contact_matrix_table(),
                 dbc.Alert(id='contact-matrix-table-out'),
                 dbc.Alert(
                     children=[
                         "Reference:",
                         html.Br(),
-                        "- Age Group distribution: ", 
+                        "- Age Group distribution By Country: ", 
                         html.A(
                             'Link',  # Link text
                             href='https://ourworldindata.org/grapher/population-by-five-year-age-group',  # URL to navigate to
@@ -330,7 +327,7 @@ app.layout = html.Div([
                             target="_blank"  # Open the link in a new tab
                         ),
                         html.Br(),
-                        "- Age Contact Matrix: ",
+                        "- Age Group Contact Matrix: ",
                         html.A(
                             'Link',  # Link text
                             href='https://www.nature.com/articles/s41598-021-94609-3',  # URL to navigate to
@@ -1973,14 +1970,14 @@ def update_table2(active_cell, table_data):
 
     This callback listens for a selection in the 'contact-matrix-table'. When a cell is clicked, it retrieves the 
     corresponding value from the table data and displays it along with the row and column identifiers. Specifically, 
-    it shows the probability of connection between two age groups (represented by row and column IDs).
+    it shows the contact weight of connection between two age groups (represented by row and column IDs).
 
     Args:
         active_cell (dict): A dictionary containing the row and column indices of the currently selected cell in the table.
         table_data (list): A list of dictionaries representing the data of the table, where each dictionary corresponds to a row.
 
     Returns:
-        str: A string displaying the probability of connection between the two age groups (row and column), or a default message 
+        str: A string displaying the contact weight of connection between the two age groups (row and column), or a default message 
              if no cell is selected.
     """
     # If a cell is selected
@@ -1991,7 +1988,7 @@ def update_table2(active_cell, table_data):
         row_id = table_data[row]['Age Group']
         # Retrieve the value from the table data using the row and column id
         value = table_data[row][column_id]
-        return f'Probability of connection from {row_id} to {column_id} : {value}'
+        return f'Contact weight of connection from {row_id} to {column_id} : {value}'
     return "Click the table"
 
 
@@ -2038,4 +2035,3 @@ def toggle_modal(open_clicks, close_clicks, current_style):
 if __name__ == '__main__':
     app.run_server(debug=False)
     #print("url: http://localhost:8080/")
-    #serve(app.server, host='0.0.0.0', port=8080, threads=7)
