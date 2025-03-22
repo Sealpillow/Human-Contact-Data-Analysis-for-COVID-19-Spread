@@ -15,7 +15,6 @@ import shutil
 from generateTable import generate_contact_matrix_table,generate_vaccination_impact_contact_patterns_table
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-# templatePath = os.path.join(current_dir, "external_program.py")
 templatePath = os.path.join(current_dir, "SPAIR.py")
 statusPath = os.path.join(current_dir, "./data/status.json")
 
