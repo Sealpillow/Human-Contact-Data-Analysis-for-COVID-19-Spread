@@ -160,8 +160,11 @@ Contains the core scripts for running the SPAIR model and generating results:
 
 
 ## Getting Started
+You may try out the simulation using the link, the speed may be slow due to free version used: https://epidemic-spread-simulation.onrender.com
+The link may or may not be available at times.
 
-These instructions will help you set up the project on your local machine.
+If you wish to run it on your local machine.
+These instructions will help you set up the project.
 
 ### Prerequisites
 - Install [Python](https://www.python.org/downloads/)
