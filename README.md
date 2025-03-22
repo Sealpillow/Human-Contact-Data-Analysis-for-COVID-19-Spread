@@ -205,8 +205,8 @@ Step 7: To focus on the connection of the selected node by clicking 'Remove Non-
 ![20250322-0844-38 1656715-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/6f7e827d-1f54-453b-8221-e9b644283dc8)
 
 Step 8: Click on the node at network exploration to get information of the node e.g probability to change state. </br>
-![image](https://github.com/user-attachments/assets/2430f344-302b-4b58-9066-f04136ef21b7) </br>
-![image](https://github.com/user-attachments/assets/701ef472-900e-4e44-a30c-be68381ea49c) </br>
+![image](https://github.com/user-attachments/assets/6b9e51f5-02fc-4d93-a77d-98cdb55f16bf) </br>
+![image](https://github.com/user-attachments/assets/ff1ae96f-c442-4112-8349-30dd69acc9bb) </br>
 
 Step 9: Scroll futher down and you can see more information on the status of the displayed network to identify potential hidden spreaders (Asymtomatic)</br>
 ![image](https://github.com/user-attachments/assets/600ff08d-dbb5-4ccc-881f-9eb530a5c605)
