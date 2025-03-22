@@ -210,10 +210,10 @@ app.layout = html.Div([
                 html.P("Notes:",style={'margin-bottom': '1vh'}),
                 html.P("Base Reproduction Number: 3.5"),
                 html.P("S (Susceptible): People who can catch the disease."),
-                html.P("P (Presymptomatic): People who have been infected but aren't showing symptoms yet."),
-                html.P("A (Asymptomatic): People who are infected but never show symptoms."),
-                html.P("I (Infectious): People who are infected and can spread the disease."),
-                html.P("R (Recovered): People who had the disease and are now immune or no longer infectious."),
+                html.P("P (Presymptomatic): Infected, not showing symptoms yet, but can spread the disease."),
+                html.P("A (Asymptomatic): Infected with no symptoms, but can still spread the disease."),
+                html.P("I (Infectious): Infected, showing symptoms, can spread the disease."),
+                html.P("R (Recovered): No longer sick and immune to the disease."),
                 html.P("Nodes having < 5 connections will have inner connections")
                 
             ], style={'display': 'flex', 'flex-direction': 'column', 'padding': '20px', 
