@@ -193,7 +193,7 @@ Step 3: Select desired parameters and click generate </br>
 <img src="https://github.com/user-attachments/assets/a1550992-70eb-4bea-9571-8ae3eaff4f3f" alt="image" width="250"/> </br>
 
 Step 4: Wait for the network to be generated </br>
-![20250322-0839-27 6510752-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/e126ebbc-88b3-433b-b31a-52dd965c781d)
+![20250322-0839-27 6510752-ezgif com-crop](https://github.com/user-attachments/assets/e7efd7eb-7718-4173-a423-a8259f80d222)
 
 Step 5: Visualizing the simulation </br>
 ![Recording2025-01-30003527-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/37026bec-64ea-42c2-a87a-4d7131ca4e2b)
