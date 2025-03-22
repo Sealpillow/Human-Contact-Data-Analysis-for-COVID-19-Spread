@@ -196,7 +196,7 @@ Step 4: Wait for the network to be generated </br>
 ![20250322-0839-27 6510752-ezgif com-crop](https://github.com/user-attachments/assets/e7efd7eb-7718-4173-a423-a8259f80d222)
 
 Step 5: Visualizing the simulation </br>
-![Recording2025-01-30003527-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/37026bec-64ea-42c2-a87a-4d7131ca4e2b)
+![20250322-0902-44 8374765-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/1e160d2c-e693-416b-b931-494caeb189ff)
 
 Step 6: Select any individual you want to obeserve e.g Node 1 </br>
 ![image](https://github.com/user-attachments/assets/a36271e6-6043-4310-9932-9d5aec8e70d1)
