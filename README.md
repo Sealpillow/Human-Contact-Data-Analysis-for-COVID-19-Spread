@@ -202,7 +202,7 @@ Step 6: Select any individual you want to obeserve e.g Node 1 </br>
 ![image](https://github.com/user-attachments/assets/a36271e6-6043-4310-9932-9d5aec8e70d1)
 
 Step 7: To focus on the connection of the selected node by clicking 'Remove Non-Selected Node Connections'. and the </br>
-![20250129-1645-45 5382081-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/33a203a3-6bd6-4f5d-8989-c720ffecc35c)
+![20250322-0844-38 1656715-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/6f7e827d-1f54-453b-8221-e9b644283dc8)
 
 Step 8: Click on the node at network exploration to get information of the node e.g probability to change state. </br>
 ![image](https://github.com/user-attachments/assets/2430f344-302b-4b58-9066-f04136ef21b7) </br>
