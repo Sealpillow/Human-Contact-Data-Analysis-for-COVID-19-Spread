@@ -208,7 +208,7 @@ def generateConnectionsRandomly(population, rng, base_weighted_pool):
     connections = set()
     connections_count = {i: 0 for i in range(1, population + 1)}
 
-    # Generate required connections using uniform distribution (1-55)
+    # Generate required connections using uniform distribution (1-18) Upper Bound(18) due to aged group 10-14, who exhibit an average of 18.22 contacts.
     required_connections = {person: rng.integers(1,19) for person in range(1, population + 1)}
 
     # Generate connections
