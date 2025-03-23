@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
+currentDir = os.path.dirname(os.path.abspath(__file__))
 
 def generateProportion(country, year):
     """
@@ -24,7 +24,7 @@ def generateProportion(country, year):
           while maintaining the total at 100%.
     """
     name = 'population-by-five-year-age-group.csv'
-    path = os.path.join(current_dir, "./data/{}".format(name))
+    path = os.path.join(currentDir, "./data/{}".format(name))
     dataCSV = pd.read_csv(path)
     # Age Group: 0-9, 10-19, 20-29, 30-39, 40-49, 50-59, 60-69, >70
     dataCSV = dataCSV.query(f"Entity == '{country}' and Year == {year}")

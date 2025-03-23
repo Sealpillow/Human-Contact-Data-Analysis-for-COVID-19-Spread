@@ -8,23 +8,23 @@ import os
 import pandas as pd
 import plotly.graph_objects as go
 from collections import Counter, defaultdict
-current_dir = os.path.dirname(os.path.abspath(__file__))
+currentDir = os.path.dirname(os.path.abspath(__file__))
 
-def plotResult(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts,infected_counts,recovered_counts):
+def plotResult(days,susceptibleCounts,presymptomaticCounts,asymptomaticCounts,infectedCounts,recoveredCounts):
     """
     Generates a multi-line plot to visualize the progression of population health states 
     over a specified number of days using Plotly.
 
     Parameters:
         days (int): Total number of days in the simulation.
-        susceptible_counts (list): Daily counts of individuals in the 'Susceptible' state.
-        presymptomatic_counts (list): Daily counts of individuals in the 'Presymptomatic' state.
-        asymptomatic_counts (list): Daily counts of individuals in the 'Asymptomatic' state.
-        infected_counts (list): Daily counts of individuals in the 'Infected' state.
-        recovered_counts (list): Daily counts of individuals in the 'Recovered' state.
+        susceptibleCounts (list): Daily counts of individuals in the 'Susceptible' state.
+        presymptomaticCounts (list): Daily counts of individuals in the 'Presymptomatic' state.
+        asymptomaticCounts (list): Daily counts of individuals in the 'Asymptomatic' state.
+        infectedCounts (list): Daily counts of individuals in the 'Infected' state.
+        recoveredCounts (list): Daily counts of individuals in the 'Recovered' state.
 
     Returns:
-        plotly.graph_objects.Figure: A Plotly figure displaying the multi-line plot for all states.
+        plotly.graphObjects.Figure: A Plotly figure displaying the multi-line plot for all states.
 
     Description:
         - Maps each health state to a unique color using `statusColourMap`.
@@ -44,19 +44,19 @@ def plotResult(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts
         'Recovered': 'green',
     }   
     data = {
-        'Susceptible': susceptible_counts,
-        'Presymptomatic': presymptomatic_counts,
-        'Asymptomatic': asymptomatic_counts,
-        'Infectious': infected_counts,
-        'Recovered': recovered_counts
+        'Susceptible': susceptibleCounts,
+        'Presymptomatic': presymptomaticCounts,
+        'Asymptomatic': asymptomaticCounts,
+        'Infectious': infectedCounts,
+        'Recovered': recoveredCounts
     }
 
     # Define the order for the plot (e.g., you want 'Infectious' to be plotted last)
-    ordered_labels = ['Susceptible','Recovered', 'Infectious','Asymptomatic','Presymptomatic']  # Custom order
+    orderedLabels = ['Susceptible','Recovered', 'Infectious','Asymptomatic','Presymptomatic']  # Custom order
 
     # Create a list of traces in the desired order
     traces = []
-    for label in ordered_labels:
+    for label in orderedLabels:
         counts = data[label]
         trace = go.Scatter(
             x=list(range(1, days + 1)),
@@ -85,44 +85,44 @@ def plotResult(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts
     return fig   
 
 
-def plotInfectionRate(days, susceptible_counts):
+def plotInfectionRate(days, susceptibleCounts):
     # plotly color map for susceptible decrease rate
     statusColourMap = {
         'Infection Rate': 'darkred',
     }
 
     # Calculate the rate of decrease in susceptible counts
-    susceptible_decrease_rate = [0] + [susceptible_counts[i - 1] - susceptible_counts[i] for i in range(1, len(susceptible_counts))]  # Decrease in susceptible population
-    susceptible_decrease_rate_per_susceptible = [round(rate / susceptible_counts[i - 1]*100,2) if susceptible_counts[i - 1] > 0 else 0 for i, rate in enumerate(susceptible_decrease_rate)][1:]  # Avoid division by 0 and skip first day
-    #overallInfectionRate = round(sum(susceptible_decrease_rate_per_susceptible)/len(susceptible_decrease_rate_per_susceptible),2)
-    overallInfectionRate = round((susceptible_counts[0]-susceptible_counts[-1])/susceptible_counts[0]*100,2)
+    susceptibleDecreaseRate = [0] + [susceptibleCounts[i - 1] - susceptibleCounts[i] for i in range(1, len(susceptibleCounts))]  # Decrease in susceptible population
+    susceptibleDecreaseRatePerSusceptible = [round(rate / susceptibleCounts[i - 1]*100,2) if susceptibleCounts[i - 1] > 0 else 0 for i, rate in enumerate(susceptibleDecreaseRate)][1:]  # Avoid division by 0 and skip first day
+    #overallInfectionRate = round(sum(susceptibleDecreaseRatePerSusceptible)/len(susceptibleDecreaseRatePerSusceptible),2)
+    overallInfectionRate = round((susceptibleCounts[0]-susceptibleCounts[-1])/susceptibleCounts[0]*100,2)
     # Find the peak of susceptible decrease rate
-    peak_day = susceptible_decrease_rate_per_susceptible.index(max(susceptible_decrease_rate_per_susceptible)) + 2  # +2 to adjust for starting from day 2
-    peak_value = max(susceptible_decrease_rate_per_susceptible)
+    peakDay = susceptibleDecreaseRatePerSusceptible.index(max(susceptibleDecreaseRatePerSusceptible)) + 2  # +2 to adjust for starting from day 2
+    peakValue = max(susceptibleDecreaseRatePerSusceptible)
 
     # Create the plot for susceptible decrease rate
-    susceptible_decrease_trace = go.Scatter(
+    susceptibleDecreaseTrace = go.Scatter(
         x=list(range(2, days + 1)),  # Start from day 2 since first day doesn't have a decrease
-        y=susceptible_decrease_rate_per_susceptible,
+        y=susceptibleDecreaseRatePerSusceptible,
         mode='lines+text',
         name="Infection Rate",
         line=dict(color=statusColourMap.get('Infection Rate', 'blue'))  # Dashed line for decrease rate
     )
 
     # Create a marker for the peak
-    peak_marker = go.Scatter(
-        x=[peak_day],
-        y=[peak_value],
+    peakMarker = go.Scatter(
+        x=[peakDay],
+        y=[peakValue],
         mode='markers+text',
         name="Peak",
         marker=dict(color='red', size=10, symbol='star'),
-        text=[f'Day {peak_day}: {peak_value:.2f}%'],
+        text=[f'Day {peakDay}: {peakValue:.2f}%'],
         #textposition='top center'
         textposition='middle right'
     )
 
     # Combine both the susceptible decrease rate and the peak marker
-    fig = go.Figure(data=[susceptible_decrease_trace, peak_marker])
+    fig = go.Figure(data=[susceptibleDecreaseTrace, peakMarker])
 
     # Add labels and title
     fig.update_layout(
@@ -136,7 +136,7 @@ def plotInfectionRate(days, susceptible_counts):
     fig.write_json('./data/currInfectionRate.json')
     # Show the figure
     #fig.show()
-    return fig, overallInfectionRate, susceptible_decrease_rate_per_susceptible
+    return fig, overallInfectionRate, susceptibleDecreaseRatePerSusceptible
 
 
 
@@ -186,7 +186,7 @@ def plotAgeGroup(inputPopulation, specificProportion):
     categories = list(data.keys())
     values = list(data.values())
     # Define common properties for both traces
-    common_props = dict(
+    commonProps = dict(
         labels=categories,
         values=values,
         marker=dict(colors=['#e60049','#FFA500', '#FFD700','#32CD32','#0bb4ff','#FFC0CB','#00cfad','#A020F0'])  # Custom color sequence
@@ -194,7 +194,7 @@ def plotAgeGroup(inputPopulation, specificProportion):
 
     # First trace: showing percentage outside
     trace1 = go.Pie(
-        **common_props,
+        **commonProps,
         textinfo='label',
         textposition='outside',
         textfont=dict(size=14, color="black"),
@@ -203,7 +203,7 @@ def plotAgeGroup(inputPopulation, specificProportion):
 
     # Second trace: showing category labels inside
     trace2 = go.Pie(
-        **common_props,
+        **commonProps,
         textinfo='percent + value',
         textposition='inside',
         textfont=dict(size=14, color="black"),
@@ -224,20 +224,20 @@ def plotAgeGroup(inputPopulation, specificProportion):
     return fig, ageGroupsDistribution
 
 
-def plotStackBar(days,susceptible_counts,presymptomatic_counts,asymptomatic_counts,infected_counts,recovered_counts):
+def plotStackBar(days,susceptibleCounts,presymptomaticCounts,asymptomaticCounts,infectedCounts,recoveredCounts):
     """
     Generates a stacked bar plot to visualize the distribution of infection states over a specified number of days.
 
     Parameters:
         days (int): Total number of days in the simulation.
-        susceptible_counts (list): Daily counts of individuals in the 'Susceptible' state.
-        presymptomatic_counts (list): Daily counts of individuals in the 'Presymptomatic' state.
-        asymptomatic_counts (list): Daily counts of individuals in the 'Asymptomatic' state.
-        infected_counts (list): Daily counts of individuals in the 'Infected' state.
-        recovered_counts (list): Daily counts of individuals in the 'Recovered' state.
+        susceptibleCounts (list): Daily counts of individuals in the 'Susceptible' state.
+        presymptomaticCounts (list): Daily counts of individuals in the 'Presymptomatic' state.
+        asymptomaticCounts (list): Daily counts of individuals in the 'Asymptomatic' state.
+        infectedCounts (list): Daily counts of individuals in the 'Infected' state.
+        recoveredCounts (list): Daily counts of individuals in the 'Recovered' state.
 
     Returns:
-        plotly.graph_objects.Figure: A Plotly figure displaying a stacked bar plot for all infection states.
+        plotly.graphObjects.Figure: A Plotly figure displaying a stacked bar plot for all infection states.
 
     Description:
         - Creates a stacked bar chart where each bar represents the total count for a specific day.
@@ -257,11 +257,11 @@ def plotStackBar(days,susceptible_counts,presymptomatic_counts,asymptomatic_coun
     }   
     # Create the data dictionary
     data = {
-        'Susceptible': susceptible_counts,
-        'Presymptomatic': presymptomatic_counts,
-        'Asymptomatic': asymptomatic_counts,
-        'Infectious': infected_counts,
-        'Recovered': recovered_counts
+        'Susceptible': susceptibleCounts,
+        'Presymptomatic': presymptomaticCounts,
+        'Asymptomatic': asymptomaticCounts,
+        'Infectious': infectedCounts,
+        'Recovered': recoveredCounts
     }
 
     # Create a stacked bar plot
@@ -298,7 +298,7 @@ def plotCountConnections(connections):
         connections (list): A list of integers representing the number of connections for each individual.
 
     Returns:
-        plotly.graph_objects.Figure: A Plotly figure displaying a count plot of the frequency distribution of connections.
+        plotly.graphObjects.Figure: A Plotly figure displaying a count plot of the frequency distribution of connections.
 
     Description:
         - Creates a bar chart where the x-axis represents the number of connections and the y-axis represents 
@@ -329,9 +329,9 @@ def plotCountConnections(connections):
         yaxis_title="Count",
         font=dict(size=16),
     )
-    x_range = list(range(min(connections), max(connections)+1))
+    xRange = list(range(min(connections), max(connections)+1))
     # Ensure all x-axis labels are displayed
-    fig.update_xaxes(tickmode='array', tickvals=x_range)
+    fig.update_xaxes(tickmode='array', tickvals=xRange)
     # Show the plot
     #fig.show()
     fig.write_json('./data/currPlotCountConnections.json')
@@ -343,18 +343,18 @@ def plotIndiConnAgeGroup(data, id):
     bins = [0, 10, 20, 30, 40, 50, 60, 70, 80, np.inf]
 
     # Use np.histogram to calculate the frequency of each bin
-    hist_values, bin_edges = np.histogram(data, bins=bins)
+    histValues, bin_edges = np.histogram(data, bins=bins)
 
     # Create the bar graph
     categories = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80+']
-    values = hist_values
+    values = histValues
 
     # Calculate percentages for text
     total = sum(values)
     percentages = [(value / total) * 100 for value in values]
 
     # Define common properties for both traces
-    common_props = dict(
+    commonProps = dict(
         labels=categories,
         values=values,
         marker=dict(colors=['#e60049','#FFA500', '#FFD700','#32CD32','#0bb4ff','#FFC0CB','#00cfad','#A020F0'])  # Custom color sequence
@@ -362,7 +362,7 @@ def plotIndiConnAgeGroup(data, id):
 
     # First trace: showing percentage outside
     trace1 = go.Pie(
-        **common_props,
+        **commonProps,
         textinfo='label',
         textposition='outside',
         textfont=dict(size=14, color="black"),
@@ -371,7 +371,7 @@ def plotIndiConnAgeGroup(data, id):
 
     # Second trace: showing category labels inside
     trace2 = go.Pie(
-        **common_props,
+        **commonProps,
         textinfo='percent + value',
         textposition='inside',
         textfont=dict(size=14, color="black"),
@@ -399,7 +399,7 @@ def plotDistributionSubPlot():
     different stages of infection: Presymptomatic, Infectious, and Asymptomatic.
 
     Returns:
-        plotly.graph_objects.Figure: A Plotly figure containing three subplots, each displaying a CDF 
+        plotly.graphObjects.Figure: A Plotly figure containing three subplots, each displaying a CDF 
         for a different stage of infection.
 
     Description:
@@ -465,10 +465,10 @@ def plotDistributionSubPlot():
 
 def plotDegreeVsInfection(dailyNetwork, population, days):
     data = {
-        "node_id": [person for person in range(1, population+1)],
+        "nodeId": [person for person in range(1, population+1)],
         "connections": [-1 for person in range(1, population+1)],
-        "infection_status": [None for person in range(1, population+1)],  # None means never infected
-        "day_of_spread": ['-' for person in range(1, population+1)],
+        "infectionStatus": [None for person in range(1, population+1)],  # None means never infected
+        "dayOfSpread": ['-' for person in range(1, population+1)],
     }
     pool = []
     for person in range(1, population+1):
@@ -481,15 +481,15 @@ def plotDegreeVsInfection(dailyNetwork, population, days):
             sumConnections+=len(currNode.connections)
             if (status == 'P' or status == 'A') and day != 1: # at the point where the person is infected
                 node = prev
-                # scatter point to indicate day of infection -> node_id: 1, connections: 1, infection_status: 2, day_of_spread: -
+                # scatter point to indicate day of infection -> nodeId: 1, connections: 1, infectionStatus: 2, dayOfSpread: -
                 data["connections"][person-1] = len(node.connections) # connection the person came into contact with
-                data["infection_status"][person-1] = day # the day where person transition to a hiddenspreader
+                data["infectionStatus"][person-1] = day # the day where person transition to a hiddenspreader
                 
-                # scatter point to indicate as hidden spreader -> node_id: 1, connections: 1, infection_status: A, day_of_spread: -
-                data["node_id"].append(person)
+                # scatter point to indicate as hidden spreader -> nodeId: 1, connections: 1, infectionStatus: A, dayOfSpread: -
+                data["nodeId"].append(person)
                 data["connections"].append(len(node.connections))
-                data["infection_status"].append(status)
-                data['day_of_spread'].append('-')
+                data["infectionStatus"].append(status)
+                data['dayOfSpread'].append('-')
 
                 count = 0
                 # checking yesterday node connections if there only hidden spreaders(A/P) and non infected
@@ -509,7 +509,7 @@ def plotDegreeVsInfection(dailyNetwork, population, days):
             prev = currNode
             prevNetwork = network
         if infection == None:
-            data["infection_status"][person-1] = 'S'
+            data["infectionStatus"][person-1] = 'S'
             data['connections'][person-1] = len(prev.connections)
 
     # Create a dictionary to store the letter and corresponding values
@@ -524,49 +524,49 @@ def plotDegreeVsInfection(dailyNetwork, population, days):
     potentialSpreaders = [(person, sorted(set(days))) for person, days in spreadHistory.items()]
 
     for spreader, daysList in potentialSpreaders:
-        if spreader in data['node_id']:
-            index = data['node_id'].index(spreader)
+        if spreader in data['nodeId']:
+            index = data['nodeId'].index(spreader)
             connections = data['connections'][index]
-            infection_status = 'H'
+            infectionStatus = 'H'
             # Append the new data to each list
-            data['node_id'].append(spreader)
+            data['nodeId'].append(spreader)
             data['connections'].append(connections)
-            data['infection_status'].append(infection_status)
-            data['day_of_spread'].append(','.join(map(str, daysList)))
+            data['infectionStatus'].append(infectionStatus)
+            data['dayOfSpread'].append(','.join(map(str, daysList)))
 
     df = pd.DataFrame(data)
 
-    hiddenSpreadersGroup = df[df['infection_status'].isin(['A', 'P'])]
-    potentialHiddenSpreadersGroup = df[df['infection_status'] == 'H']
+    hiddenSpreadersGroup = df[df['infectionStatus'].isin(['A', 'P'])]
+    potentialHiddenSpreadersGroup = df[df['infectionStatus'] == 'H']
 
     # Create a list to hold the new rows
-    new_rows = []
+    newRows = []
     # Loop through hidden spreaders group to check if they were correctly identified
     for _, row in hiddenSpreadersGroup.iterrows():
-        node_id = row['node_id']
+        nodeId = row['nodeId']
         connections = row['connections']
         
-        # Check if the node_id is in the potential hidden spreaders group
-        potential_match = potentialHiddenSpreadersGroup[potentialHiddenSpreadersGroup['node_id'] == node_id]
+        # Check if the nodeId is in the potential hidden spreaders group
+        potentialMatch = potentialHiddenSpreadersGroup[potentialHiddenSpreadersGroup['nodeId'] == nodeId]
         
-        if not potential_match.empty:
-            day_of_spread = potential_match['day_of_spread'].values[0]
+        if not potentialMatch.empty:
+            dayOfSpread = potentialMatch['dayOfSpread'].values[0]
             # True Positive (TP): Correct prediction -> Actual hidden spreaders ('A', 'P') that are correctly predicted as potential hidden spreaders ('H').
-            new_row = {'node_id': node_id, 'connections': connections, 'infection_status': 'O', 'day_of_spread': day_of_spread}
+            newRow = {'nodeId': nodeId, 'connections': connections, 'infectionStatus': 'O', 'dayOfSpread': dayOfSpread}
         else:
             # False Negative (FN): Missed prediction -> Actual hidden spreaders ('A', 'P') that are not predicted as hidden spreaders.
-            new_row = {'node_id': node_id, 'connections': connections, 'infection_status': 'X', 'day_of_spread': '-'}
+            newRow = {'nodeId': nodeId, 'connections': connections, 'infectionStatus': 'X', 'dayOfSpread': '-'}
         # Append the new row to the list of new rows
-        new_rows.append(new_row)
+        newRows.append(newRow)
 
     # Create a DataFrame from the new rows
-    new_df = pd.DataFrame(new_rows)
+    newDf = pd.DataFrame(newRows)
 
     # Concatenate the new rows to the original DataFrame
-    df = pd.concat([df, new_df], ignore_index=True)
+    df = pd.concat([df, newDf], ignore_index=True)
 
     # Map infection status to categories for visualization purposes
-    y_levels = {
+    yLevels = {
         'Remained Susceptible': days + 10,                   # High Y for "Remained S"
         'Hidden Spreader': days + 20,                        # Even higher Y for "Hidden Spreaders"
         'Potential Hidden Spreader': days + 30,              # Even higher Y for "Potential Hidden Spreader"
@@ -576,16 +576,16 @@ def plotDegreeVsInfection(dailyNetwork, population, days):
 
     # Apply fixed infection day based on infection status
     # Set y-axis positions for different categories in the graph
-    df['infection_day_fixed'] = df['infection_status'].apply(
-        lambda x: y_levels['Remained Susceptible'] if x == "S" else
-        y_levels['Hidden Spreader'] if x in ('A', 'P') else
-        y_levels['Potential Hidden Spreader'] if x == 'H' else
-        y_levels['Missed Prediction Hidden Spreader'] if x == 'X' else
-        y_levels['Correct Prediction Hidden Spreader'] if x == 'O' else x
+    df['infectionDayFixed'] = df['infectionStatus'].apply(
+        lambda x: yLevels['Remained Susceptible'] if x == "S" else
+        yLevels['Hidden Spreader'] if x in ('A', 'P') else
+        yLevels['Potential Hidden Spreader'] if x == 'H' else
+        yLevels['Missed Prediction Hidden Spreader'] if x == 'X' else
+        yLevels['Correct Prediction Hidden Spreader'] if x == 'O' else x
     )
 
     # Classify the nodes into categories based on their infection status
-    df['category'] = df['infection_status'].apply(
+    df['category'] = df['infectionStatus'].apply(
         lambda x: "Remained Susceptible" if x == "S" else
         "Hidden Spreader" if x in ('A', 'P') else
         "Potential Hidden Spreader" if x == 'H' else
@@ -595,25 +595,25 @@ def plotDegreeVsInfection(dailyNetwork, population, days):
     )
 
     # Create hover text based on infection status
-    df["hover_text"] = df.apply(
-        lambda row: f"Node {row['node_id']}, connections: {row['connections']}, Infection Day: {row['infection_day_fixed']}"    # scatter points of hidden spreaders day of infection
-        if isinstance(row['infection_status'], int) else
-        f"Node {row['node_id']}, Connections: {row['connections']}, Day(s) of spread: {row['day_of_spread']}"  # scatter points of hidden spreaders day of spread
-        if row['infection_status'] == 'O' else
-        f"Node {row['node_id']}, Connections: {row['connections']}, In Infectious Community: ✅" # scatter points of Missed hidden spreaders 
-        if row['infection_status'] == 'X' else
-        f"Node {row['node_id']}, Connections: {row['connections']}, Infection Status: {row['infection_status']}" ,
+    df["hoverText"] = df.apply(
+        lambda row: f"Node {row['nodeId']}, connections: {row['connections']}, Infection Day: {row['infectionDayFixed']}"    # scatter points of hidden spreaders day of infection
+        if isinstance(row['infectionStatus'], int) else
+        f"Node {row['nodeId']}, Connections: {row['connections']}, Day(s) of spread: {row['dayOfSpread']}"  # scatter points of hidden spreaders day of spread
+        if row['infectionStatus'] == 'O' else
+        f"Node {row['nodeId']}, Connections: {row['connections']}, In Infectious Community: ✅" # scatter points of Missed hidden spreaders 
+        if row['infectionStatus'] == 'X' else
+        f"Node {row['nodeId']}, Connections: {row['connections']}, Infection Status: {row['infectionStatus']}" ,
         axis=1
     )
 
-    # Grouping by (connections, infection_day_fixed) and concatenating node info (sorted by node_id)
-    point_info = defaultdict(list)
-    for node_id, deg, day, text in zip(df['node_id'], df['connections'], df['infection_day_fixed'], df['hover_text']):
-        point_info[(deg, day)].append((node_id, text))  # Store as tuple (node_id, text) for sorting
+    # Grouping by (connections, infectionDayFixed) and concatenating node info (sorted by nodeId)
+    pointInfo = defaultdict(list)
+    for nodeId, deg, day, text in zip(df['nodeId'], df['connections'], df['infectionDayFixed'], df['hoverText']):
+        pointInfo[(deg, day)].append((nodeId, text))  # Store as tuple (nodeId, text) for sorting
 
-    # Sort by node_id and join with HTML line breaks
-    df["grouped_hover_text"] = df.apply(
-        lambda row: "<br>".join(text for _, text in sorted(point_info[(row['connections'], row['infection_day_fixed'])])),
+    # Sort by nodeId and join with HTML line breaks
+    df["groupedHoverText"] = df.apply(
+        lambda row: "<br>".join(text for _, text in sorted(pointInfo[(row['connections'], row['infectionDayFixed'])])),
         axis=1
     )
 
@@ -621,7 +621,7 @@ def plotDegreeVsInfection(dailyNetwork, population, days):
     fig = go.Figure()
 
     # Map the infection status to colors manually
-    color_map = {
+    colorMap = {
         "Correct Prediction Hidden Spreader":'green',
         "Missed Prediction Hidden Spreader": 'black',
         "Potential Hidden Spreader":'pink',
@@ -631,15 +631,15 @@ def plotDegreeVsInfection(dailyNetwork, population, days):
         "Early Infection": 'orange',
     }
     # Add traces for each category
-    for category, color in color_map.items():
-        category_df = df[df['category'] == category]
+    for category, color in colorMap.items():
+        categoryDf = df[df['category'] == category]
         
         fig.add_trace(go.Scatter(
-            x=category_df["connections"],
-            y=category_df["infection_day_fixed"],
+            x=categoryDf["connections"],
+            y=categoryDf["infectionDayFixed"],
             mode='markers',
             marker=dict(color=color),
-            text=category_df["grouped_hover_text"],  # Hover text
+            text=categoryDf["groupedHoverText"],  # Hover text
             hoverinfo="text",  # Show text on hover
             name=category  # Add the category to the legend
         ))
@@ -650,8 +650,8 @@ def plotDegreeVsInfection(dailyNetwork, population, days):
         xaxis_title="Average Number of Connections",
         yaxis_title="Infection Day, Prediction and Result",
         yaxis=dict(
-            tickvals=list(range(0, days + 60, 10)) + [val for val in y_levels.values()],
-            ticktext=[str(i) for i in range(0, days + 10, 10)] + [key for key in y_levels.keys()]
+            tickvals=list(range(0, days + 60, 10)) + [val for val in yLevels.values()],
+            ticktext=[str(i) for i in range(0, days + 10, 10)] + [key for key in yLevels.keys()]
         ),
         showlegend=True  # Enable legend display
     )
@@ -671,12 +671,12 @@ def computeConfusionMatrixFromDF(df):
     TP = FN = 0
 
     # Compute confusion matrix for model evaluation (TP, FN)
-    hidden_spreaders = df[df['infection_status'].isin(['A', 'P'])]
-    potential_spreaders = df[df['infection_status'] == 'H']
+    hiddenSpreaders = df[df['infectionStatus'].isin(['A', 'P'])]
+    potentialSpreaders = df[df['infectionStatus'] == 'H']
     
-    merged = hidden_spreaders.merge(
-        potential_spreaders[['node_id']], 
-        on='node_id', 
+    merged = hiddenSpreaders.merge(
+        potentialSpreaders[['nodeId']], 
+        on='nodeId', 
         how='left', 
         indicator=True
     )

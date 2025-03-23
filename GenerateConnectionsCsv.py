@@ -4,8 +4,8 @@ import numpy as np
 import csv
 
 name = 'infectious.csv'
-current_dir = os.path.dirname(os.path.abspath(__file__))
-path = os.path.join(current_dir, "./data/{}".format(name))
+currentDir = os.path.dirname(os.path.abspath(__file__))
+path = os.path.join(currentDir, "./data/{}".format(name))
 
 def assignAgeToIDs(population, rng, ageGroupsDistribution):
     '''
@@ -29,7 +29,7 @@ def assignAgeToIDs(population, rng, ageGroupsDistribution):
         Each person is assigned a unique ID and a random age within their group.
 
     '''
-    age_ranges = [
+    ageRanges = [
     ((0, 9), ageGroupsDistribution[0]),      # 0-9
     ((10, 19), ageGroupsDistribution[1]),    # 10-19
     ((20, 29), ageGroupsDistribution[2]),    # 20-29
@@ -40,42 +40,42 @@ def assignAgeToIDs(population, rng, ageGroupsDistribution):
     ((70, 100), ageGroupsDistribution[7]),   # >70
     ]
     # Initialize the age dictionary
-    age_dict = {}
+    ageDict = {}
 
     # Generate ages for each group
-    for (low, high), numindi  in age_ranges:
+    for (low, high), numindi  in ageRanges:
         for person in range(numindi):
-            person_id = len(age_dict) + 1  # Create a unique ID for each person
-            age_dict[person_id] = rng.integers(low=low, high=high + 1)
+            personId = len(ageDict) + 1  # Create a unique ID for each person
+            ageDict[personId] = rng.integers(low=low, high=high + 1)
     # If there's any remaining population, assign them to the last group
-    remaining = population - len(age_dict)
+    remaining = population - len(ageDict)
     for person in range(remaining):
-        person_id = len(age_dict) + 1
-        age_dict[person_id] = rng.integers(low=age_ranges[-1][1], high=age_ranges[-1][1] + 1)
-    return age_dict
+        personId = len(ageDict) + 1
+        ageDict[personId] = rng.integers(low=ageRanges[-1][1], high=ageRanges[-1][1] + 1)
+    return ageDict
 
 
 
-def get_mean_sd(age, age_ranges):
+def getMeanSd(age, ageRanges):
     """
-    Returns the mean and standard deviation for the given age based on age_ranges.
+    Returns the mean and standard deviation for the given age based on ageRanges.
 
     Parameters:
         age (int): The age to find the corresponding mean and sd for.
-        age_ranges (list of tuples): List of (age_range, (mean, sd)) pairs.
+        ageRanges (list of tuples): List of (ageRange, (mean, sd)) pairs.
 
     Returns:
         tuple: (mean, sd) for the age if within a defined range, else (None, None).
 
     Example:
-        For age_ranges = [((1, 4), (10.21, 7.65))] and age = 3, returns (10.21, 7.65).
+        For ageRanges = [((1, 4), (10.21, 7.65))] and age = 3, returns (10.21, 7.65).
     """
-    for (start, end), (mean, sd) in age_ranges:
+    for (start, end), (mean, sd) in ageRanges:
         if start <= age <= end:
             return mean, sd
     return None, None
 
-def precompute_pools(population):
+def precomputePools(population):
     """
     Precomputes a weighted pool of individuals for random connection generation.
 
@@ -91,24 +91,24 @@ def precompute_pools(population):
         population (int): The total number of individuals in the population.
 
     Returns:
-        list of tuples: A list containing tuples of (person_id, weight), where 
-                        person_id ranges from 1 to the population, and each individual 
+        list of tuples: A list containing tuples of (personId, weight), where 
+                        personId ranges from 1 to the population, and each individual 
                         has an equal weight of 1.        
     
     Example:
-        >>> precompute_pools(5)
+        >>> precomputePools(5)
         [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]
     """
     # Precompute pool
-    base_weighted_pool = [(person, 1) for person in range(1, population + 1)]
-    return base_weighted_pool
+    baseWeightedPool = [(person, 1) for person in range(1, population + 1)]
+    return baseWeightedPool
 
 
-def precompute_weighted_pools(population, age_dict):
+def precomputeWeightedPools(population, ageDict):
     """
     Precomputes weighted pools for each age group based on the contact matrix.
 
-    The contact matrix (M_full) represents the rate of contact between each pair 
+    The contact matrix (MFull) represents the rate of contact between each pair 
     of age brackets. These values are used as weights for selecting contacts, 
     meaning individuals will have higher chances of selection based on their 
     contact rate with other age groups.
@@ -120,22 +120,22 @@ def precompute_weighted_pools(population, age_dict):
 
     Args:
         population (int): The total number of individuals in the population.
-        age_dict (dict): A dictionary mapping individual IDs to their respective age.
+        ageDict (dict): A dictionary mapping individual IDs to their respective age.
 
     Returns:
         dict: A dictionary where keys represent age groups (0-8), and values are lists 
-              of tuples (person_id, contact_rate), defining the weighted pool for 
+              of tuples (personId, contactRate), defining the weighted pool for 
               each age group.
 
     Example:
-        >>> precompute_weighted_pools(5, {1: 25, 2: 34, 3: 45, 4: 67, 5: 80})
+        >>> precomputeWeightedPools(5, {1: 25, 2: 34, 3: 45, 4: 67, 5: 80})
         { 0: [(1, 3.0), (2, 7.1), (3, 3.7), (4, 2.3), (5, 1.4)], 
           1: [(1, 6.4), (2, 5.4), (3, 7.5), (4, 1.8), (5, 1.7)],  
           ...
         }
     """
     # Contact matrix
-    M_full = np.array([
+    MFull = np.array([
         [19.2, 4.8, 3.0, 7.1, 3.7, 3.1, 2.3, 1.4, 1.4],
         [4.8, 42.4, 6.4, 5.4, 7.5, 5.0, 1.8, 1.7, 1.7],
         [3.0, 6.4, 20.7, 9.2, 7.1, 6.3, 2.0, 0.9, 0.9],
@@ -148,28 +148,28 @@ def precompute_weighted_pools(population, age_dict):
     ])
 
     # Initialize the weighted pools for each age group
-    age_group_pools = {}
+    ageGroupPools = {}
     
     # Precompute weighted pools for each age group
     for age in range(9):  # Age groups 0-8
-        weighted_pool = []
+        weightedPool = []
         for person2 in range(1, population + 1):
             # Determine the age group of person2
-            if age_dict[person2] <= 79:
-                age2 = floor(age_dict[person2] / 10)
+            if ageDict[person2] <= 79:
+                age2 = floor(ageDict[person2] / 10)
             else:
                 age2 = 8  # Age group 80+
             
             # Get the rate of contact between age and age2
-            weight = M_full[age, age2]
-            weighted_pool.append((person2, weight))
+            weight = MFull[age, age2]
+            weightedPool.append((person2, weight))
         
         # Store the weighted pool for this age group
-        age_group_pools[age] = weighted_pool
+        ageGroupPools[age] = weightedPool
 
-    return age_group_pools
+    return ageGroupPools
 
-def generateConnectionsRandomly(population, rng, base_weighted_pool):
+def generateConnectionsRandomly(population, rng, baseWeightedPool):
     """
     Generates social connections based on precomputed weighted pools and individual connection requirements.
 
@@ -181,14 +181,14 @@ def generateConnectionsRandomly(population, rng, base_weighted_pool):
     Args:
         population (int): Total number of individuals in the population.
         rng (numpy.random.Generator): A random number generator instance used for generating random values.
-        base_weighted_pool (list): A list of tuples representing the precomputed weighted pool, 
+        baseWeightedPool (list): A list of tuples representing the precomputed weighted pool, 
                                     where each tuple consists of an individual ID and their associated weight.
 
     Returns:
         set: A set of connections, where each connection is represented as a tuple of two unique individual IDs.
 
     Example:
-        >>> generateConnectionsRandomly(5, rng, base_weighted_pool)
+        >>> generateConnectionsRandomly(5, rng, baseWeightedPool)
         {(1, 2), (1, 3), (2, 4), (3, 5)}
     
     Notes:
@@ -206,64 +206,64 @@ def generateConnectionsRandomly(population, rng, base_weighted_pool):
     """
 
     connections = set()
-    connections_count = {i: 0 for i in range(1, population + 1)}
+    connectionsCount = {i: 0 for i in range(1, population + 1)}
 
-    # Generate required connections using uniform distribution (1-18) Upper Bound(18) due to aged group 10-14, who exhibit an average of 18.22 contacts.
-    required_connections = {person: rng.integers(1,19) for person in range(1, population + 1)}
+    # Generate required connections using uniform distribution (1-55)
+    requiredConnections = {person: rng.integers(1,19) for person in range(1, population + 1)}
 
     # Generate connections
     for person1 in range(1, population + 1):
         
-        weighted_pool = base_weighted_pool
+        weightedPool = baseWeightedPool
 
         # Filter the weighted pool to exclude person1 from connecting to himself
-        filtered_pool = [
-            (person, weight) for person, weight in weighted_pool
+        filteredPool = [
+            (person, weight) for person, weight in weightedPool
             if person != person1 and (person1, person) not in connections
         ]
 
         # If there are fewer candidates than required, adjust the required connections
-        required_connections[person1] = min(required_connections[person1], len(filtered_pool))
+        requiredConnections[person1] = min(requiredConnections[person1], len(filteredPool))
 
-        if not filtered_pool:
+        if not filteredPool:
             print(f"No valid candidates for person {person1}. Skipping.")
             continue
         
         # Normalize the weights for the filtered pool
-        total_weight = sum(weight for _, weight in filtered_pool)
-        normalized_weights = [weight / total_weight for _, weight in filtered_pool]
+        totalWeight = sum(weight for _, weight in filteredPool)
+        normalizedWeights = [weight / totalWeight for _, weight in filteredPool]
 
         # Sample connections until the required number is met
-        while connections_count[person1] < required_connections[person1]:
+        while connectionsCount[person1] < requiredConnections[person1]:
             # Sample a connection from the filtered pool
             person2 = rng.choice(
-                [person for person, _ in filtered_pool],
-                p=normalized_weights
+                [person for person, _ in filteredPool],
+                p=normalizedWeights
             )
 
             # Add the connection
             connection = tuple(sorted((person1, person2)))
             connections.add(connection)
-            connections_count[person1] += 1
-            connections_count[person2] += 1
+            connectionsCount[person1] += 1
+            connectionsCount[person2] += 1
 
             # Update the filtered pool to exclude person2, to prevent repeated connections
-            filtered_pool = [
-                (person, weight) for person, weight in filtered_pool
+            filteredPool = [
+                (person, weight) for person, weight in filteredPool
                 if person != person2
             ]
 
-            if not filtered_pool:
+            if not filteredPool:
                 print(f"No more valid candidates for person {person1}. Stopping.")
                 break
 
             # Re-normalize the weights for the updated filtered pool
-            total_weight = sum(weight for _, weight in filtered_pool)
-            normalized_weights = [weight / total_weight for _, weight in filtered_pool]
+            totalWeight = sum(weight for _, weight in filteredPool)
+            normalizedWeights = [weight / totalWeight for _, weight in filteredPool]
 
     return connections
 
-def generateConnectionsByAgeGroup(population, rng, age_dict, age_group_pools):
+def generateConnectionsByAgeGroup(population, rng, ageDict, ageGroupPools):
     """
     Generates social connections based on precomputed weighted pools, considering individuals' age groups.
 
@@ -276,15 +276,15 @@ def generateConnectionsByAgeGroup(population, rng, age_dict, age_group_pools):
     Args:
         population (int): Total number of individuals in the population.
         rng (numpy.random.Generator): Random number generator instance used for generating random values.
-        age_dict (dict): A dictionary mapping individual IDs to their ages.
-        age_group_pools (dict): A dictionary mapping age group indices to their corresponding weighted pools,
+        ageDict (dict): A dictionary mapping individual IDs to their ages.
+        ageGroupPools (dict): A dictionary mapping age group indices to their corresponding weighted pools,
                                 where each pool contains tuples of (individual ID, weight) for that age group.
 
     Returns:
         set: A set of connections, where each connection is represented as a tuple of two unique individual IDs.
 
     Example:
-        >>> generateConnectionsByAgeGroup(5, rng, age_dict, age_group_pools)
+        >>> generateConnectionsByAgeGroup(5, rng, ageDict, ageGroupPools)
         {(1, 2), (1, 3), (2, 4), (3, 5)}
 
 
@@ -296,7 +296,7 @@ def generateConnectionsByAgeGroup(population, rng, age_dict, age_group_pools):
 
     # Define age ranges and corresponding (min, max) connections  this is based on report
     # https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.0050074&s=09
-    age_ranges = [
+    ageRanges = [
         ((0, 4), (10.21, 7.65)),
         ((5, 9), (14.81, 10.09)),
         ((10, 14), (18.22, 12.27)),
@@ -310,75 +310,75 @@ def generateConnectionsByAgeGroup(population, rng, age_dict, age_group_pools):
     ]
 
     connections = set()
-    connections_count = {i: 0 for i in range(1, population + 1)}
+    connectionsCount = {i: 0 for i in range(1, population + 1)}
 
     # Generate required number of connections per individual
-    required_connections = {}
-    for person, age in age_dict.items():
-        mean, sd = get_mean_sd(age, age_ranges)
+    requiredConnections = {}
+    for person, age in ageDict.items():
+        mean, sd = getMeanSd(age, ageRanges)
         if mean is None or sd is None:
             raise ValueError(f"Age {age} does not fall into any defined range.")
 
         # Generate number of connections using normal distribution, based on age group mean and sd, rounded down
-        num_connections = 0
-        while num_connections < 1: num_connections = int(rng.normal(mean, sd)) # round down
-        required_connections[person] = num_connections
+        numConnections = 0
+        while numConnections < 1: numConnections = int(rng.normal(mean, sd)) # round down
+        requiredConnections[person] = numConnections
 
     # Generate connections
     for person1 in range(1, population + 1):
         # Determine the age group of person1
-        if age_dict[person1] <= 79:
-            age1 = floor(age_dict[person1] / 10)
+        if ageDict[person1] <= 79:
+            age1 = floor(ageDict[person1] / 10)
         else:
             age1 = 8  # Age group 80+
 
         # Get the precomputed weighted pool for person1's age group
-        weighted_pool = age_group_pools[age1]
+        weightedPool = ageGroupPools[age1]
 
         # Filter the weighted pool to exclude person1 from connecting to himself
-        filtered_pool = [
-            (person, weight) for person, weight in weighted_pool
+        filteredPool = [
+            (person, weight) for person, weight in weightedPool
             if person != person1 and (person1, person) not in connections
         ]
 
         # If there are fewer candidates than required, adjust the required connections
-        required_connections[person1] = min(required_connections[person1], len(filtered_pool))
+        requiredConnections[person1] = min(requiredConnections[person1], len(filteredPool))
 
-        if not filtered_pool:
+        if not filteredPool:
             print(f"No valid candidates for person {person1}. Skipping.")
             continue
         
         # Normalize the weights for the filtered pool
-        total_weight = sum(weight for _, weight in filtered_pool)
-        normalized_weights = [weight / total_weight for _, weight in filtered_pool]
+        totalWeight = sum(weight for _, weight in filteredPool)
+        normalizedWeights = [weight / totalWeight for _, weight in filteredPool]
 
         # Sample connections until the required number is met
-        while connections_count[person1] < required_connections[person1]:
+        while connectionsCount[person1] < requiredConnections[person1]:
             # Sample a connection from the filtered pool
             person2 = rng.choice(
-                [person for person, _ in filtered_pool],
-                p=normalized_weights
+                [person for person, _ in filteredPool],
+                p=normalizedWeights
             )
 
             # Add the connection
             connection = tuple(sorted((person1, person2)))
             connections.add(connection)
-            connections_count[person1] += 1
-            connections_count[person2] += 1
+            connectionsCount[person1] += 1
+            connectionsCount[person2] += 1
 
             # Update the filtered pool to exclude person2, to prevent repeated connections
-            filtered_pool = [
-                (person, weight) for person, weight in filtered_pool
+            filteredPool = [
+                (person, weight) for person, weight in filteredPool
                 if person != person2
             ]
 
-            if not filtered_pool:
+            if not filteredPool:
                 print(f"No more valid candidates for person {person1}. Stopping.")
                 break
 
             # Re-normalize the weights for the updated filtered pool
-            total_weight = sum(weight for _, weight in filtered_pool)
-            normalized_weights = [weight / total_weight for _, weight in filtered_pool]
+            totalWeight = sum(weight for _, weight in filteredPool)
+            normalizedWeights = [weight / totalWeight for _, weight in filteredPool]
 
     return connections
 
@@ -409,13 +409,13 @@ def GenerateInfectiousSameConnections(population, days, seed, ageGroupsDistribut
     """
     rng = np.random.default_rng(seed)
     # Generate connections once for all days
-    age_dict = assignAgeToIDs(population, rng, ageGroupsDistribution)
+    ageDict = assignAgeToIDs(population, rng, ageGroupsDistribution)
     if 'age' not in checkbox:
-        base_weighted_pool = precompute_pools(population)
-        connections = generateConnectionsRandomly(population, rng, base_weighted_pool)
+        baseWeightedPool = precomputePools(population)
+        connections = generateConnectionsRandomly(population, rng, baseWeightedPool)
     else:
-        age_group_pools = precompute_weighted_pools(population, age_dict)
-        connections = generateConnectionsByAgeGroup(population, rng, age_dict, age_group_pools)
+        ageGroupPools = precomputeWeightedPools(population, ageDict)
+        connections = generateConnectionsByAgeGroup(population, rng, ageDict, ageGroupPools)
     # Open the file in write mode to delete its contents
     with open(path, "w", newline='') as file:
         pass  # No need to write anything, just opening the file empties it
@@ -428,19 +428,19 @@ def GenerateInfectiousSameConnections(population, days, seed, ageGroupsDistribut
         writer.writerow(["Day", "Person1", "Person2", "Age1", "Age2"])
         
         for day in range(1, days + 1):
-            sorted_connections = []
+            sortedConnections = []
             
             # Prepare the sorted list of connections with ages
             for p1, p2 in connections:
-                age1 = age_dict[p1]  # age of person1
-                age2 = age_dict[p2]  # age of person2
-                sorted_connections.append((p1, p2, age1, age2))  # undirected edge
+                age1 = ageDict[p1]  # age of person1
+                age2 = ageDict[p2]  # age of person2
+                sortedConnections.append((p1, p2, age1, age2))  # undirected edge
             
             # Sort connections by person1, then by person2
-            sorted_connections.sort(key=lambda x: (x[0], x[1]))
+            sortedConnections.sort(key=lambda x: (x[0], x[1]))
 
             # Write the sorted connections for each day
-            for p1, p2, age1, age2 in sorted_connections:
+            for p1, p2, age1, age2 in sortedConnections:
                 writer.writerow([day, p1, p2, age1, age2])
   
 
@@ -471,11 +471,11 @@ def GenerateInfectiousUniqueConnections(population, days, seed, ageGroupsDistrib
     '''
     
     # Dictionary to store the age of each person1
-    age_dict = {}
+    ageDict = {}
     rng = np.random.default_rng(seed)
 
     # Dictionary to store the age of each person, Assign ages to person
-    age_dict = assignAgeToIDs(population, rng, ageGroupsDistribution)
+    ageDict = assignAgeToIDs(population, rng, ageGroupsDistribution)
     # Open the file in write mode to delete its contents
     with open(path, "w", newline='') as file:
         pass  # No need to write anything, just opening the file empties it 
@@ -486,26 +486,26 @@ def GenerateInfectiousUniqueConnections(population, days, seed, ageGroupsDistrib
         writer.writerow(["Day", "Person1", "Person2", "Age1", "Age2"])
         for day in range(1, days + 1):
             if 'age' not in checkbox:
-                base_weighted_pool = precompute_pools(population)
-                day_connections = generateConnectionsRandomly(population, rng, base_weighted_pool)
+                baseWeightedPool = precomputePools(population)
+                dayConnections = generateConnectionsRandomly(population, rng, baseWeightedPool)
             else:
-                age_group_pools = precompute_weighted_pools(population, age_dict)
-                day_connections = generateConnectionsByAgeGroup(population, rng, age_dict, age_group_pools)
-            sorted_connections = []
+                ageGroupPools = precomputeWeightedPools(population, ageDict)
+                dayConnections = generateConnectionsByAgeGroup(population, rng, ageDict, ageGroupPools)
+            sortedConnections = []
 
-            for p1, p2 in day_connections:
-                age1 = age_dict[p1]  # age of person1
-                age2 = age_dict[p2]  # age of person2
+            for p1, p2 in dayConnections:
+                age1 = ageDict[p1]  # age of person1
+                age2 = ageDict[p2]  # age of person2
                 
                 # Normalize to ensure (p1, p2) is always (min, max)
                 p1, p2 = sorted([p1, p2])
-                sorted_connections.append((p1, p2, age1, age2))  # undirected edge
+                sortedConnections.append((p1, p2, age1, age2))  # undirected edge
 
             # Sort connections by person1, then by person2
-            sorted_connections.sort(key=lambda x: (x[0], x[1]))
+            sortedConnections.sort(key=lambda x: (x[0], x[1]))
 
             # Write the sorted connections to the file
-            for p1, p2, age1, age2 in sorted_connections:
+            for p1, p2, age1, age2 in sortedConnections:
                 writer.writerow([day, p1, p2, age1, age2])
 
 
@@ -559,10 +559,10 @@ def GenerateInfectiousCompleteConnections(population, days, seed, ageGroupsDistr
     rng = np.random.default_rng(seed)
 
     # Dictionary to store the age of each person, Assign ages to person
-    age_dict = assignAgeToIDs(population, rng, ageGroupsDistribution)
+    ageDict = assignAgeToIDs(population, rng, ageGroupsDistribution)
     
     # Get all connections for the complete graph
-    complete_connections = generateCompleteConnections(population)
+    completeConnections = generateCompleteConnections(population)
 
     # Write to the CSV file
     with open(path, mode="w", newline='') as file:
@@ -573,19 +573,19 @@ def GenerateInfectiousCompleteConnections(population, days, seed, ageGroupsDistr
         
         for day in range(1, days + 1):
             # Prepare the sorted list of connections with ages for the current day
-            sorted_connections = []
-            for p1, p2 in complete_connections:
-                age1 = age_dict[p1]  # age of person1
-                age2 = age_dict[p2]  # age of person2
-                sorted_connections.append((p1, p2, age1, age2)) # undirected edge
+            sortedConnections = []
+            for p1, p2 in completeConnections:
+                age1 = ageDict[p1]  # age of person1
+                age2 = ageDict[p2]  # age of person2
+                sortedConnections.append((p1, p2, age1, age2)) # undirected edge
 
             # Sort connections by person1, then by person2
-            sorted_connections.sort(key=lambda x: (x[0], x[1]))
+            sortedConnections.sort(key=lambda x: (x[0], x[1]))
 
             # Write connections for the current day
-            for p1, p2, age1, age2 in sorted_connections:
+            for p1, p2, age1, age2 in sortedConnections:
                 writer.writerow([day, p1, p2, age1, age2])
 
-    #print("File 'infectious_complete_graph.txt' generated successfully.")
+    #print("File 'infectiousCompleteGraph.txt' generated successfully.")
 
 

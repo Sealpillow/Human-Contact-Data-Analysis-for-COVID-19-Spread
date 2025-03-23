@@ -2,9 +2,9 @@ from dash import dash_table
 import pandas as pd
 import numpy as np
 import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
+currentDir = os.path.dirname(os.path.abspath(__file__))
 
-def generate_contact_matrix_table():
+def generateContactMatrixTable():
     """
     Generates a contact matrix table for age group interactions based on predefined contact data.
 
@@ -19,7 +19,7 @@ def generate_contact_matrix_table():
     - dash_table.DataTable: A Dash table component displaying the raw contact matrix with age groups as rows and columns.
     """
     # Example contact matrix data
-    M_full = np.array([
+    MFull = np.array([
         [19.2, 4.8, 3.0, 7.1, 3.7, 3.1, 2.3, 1.4, 1.4],
         [4.8, 42.4, 6.4, 5.4, 7.5, 5.0, 1.8, 1.7, 1.7],
         [3.0, 6.4, 20.7, 9.2, 7.1, 6.3, 2.0, 0.9, 0.9],
@@ -32,10 +32,10 @@ def generate_contact_matrix_table():
     ])
 
     # Define the index labels
-    index_labels = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80+']
+    indexLabels = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80+']
 
     # Create a DataFrame with the appropriate index
-    df = pd.DataFrame(M_full, index=index_labels, columns=index_labels)
+    df = pd.DataFrame(MFull, index=indexLabels, columns=indexLabels)
 
     # Convert the DataFrame values to strings for proper display in the Dash table
     df = df.astype(str)
@@ -57,7 +57,7 @@ def generate_contact_matrix_table():
     )
 
 
-def generate_vaccination_impact_contact_patterns_table():
+def generateVaccinationImpactContactPatternsTable():
     """
     Generates a table displaying the impact of vaccination on contact patterns based on age groups.
 
@@ -75,11 +75,11 @@ def generate_vaccination_impact_contact_patterns_table():
     - dash_table.DataTable: A Dash table component displaying the vaccination impact and contact pattern data, 
       with hover effects to enhance user interaction.
     """
-    factors_path = os.path.join(current_dir, "./data/factors.csv")
-    df = pd.read_csv(factors_path)
+    factorsPath = os.path.join(currentDir, "./data/factors.csv")
+    df = pd.read_csv(factorsPath)
     return dash_table.DataTable(
             df.to_dict('records'),[{"name": i, "id": i} for i in df.columns], 
-            id='tbl',
+            id='vaccination-impact-table', 
             style_data_conditional=[
                 {
                     'if': {'state': 'active'},  # Apply styles when a cell is hovered

@@ -12,11 +12,11 @@ import plotly.graph_objects as go
 from countryProportion import generateProportion
 from plotGraph import plotCountConnections,plotDistributionSubPlot, plotIndiConnAgeGroup
 import shutil
-from generateTable import generate_contact_matrix_table,generate_vaccination_impact_contact_patterns_table
+from generateTable import generateContactMatrixTable,generateVaccinationImpactContactPatternsTable
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-templatePath = os.path.join(current_dir, "SPAIR.py")
-statusPath = os.path.join(current_dir, "./data/status.json")
+currentDir = os.path.dirname(os.path.abspath(__file__))
+templatePath = os.path.join(currentDir, "SPAIR.py")
+statusPath = os.path.join(currentDir, "./data/status.json")
 
 # Create the Dash app with Bootstrap styles
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP,dbc.icons.FONT_AWESOME])
@@ -39,7 +39,7 @@ dayInfectionRateList = []
 avgDailyConnectionsList = []
 currVer = []
 prevVer = []
-current_day = 0
+currentDay = 0
 
 app.layout = html.Div([
 
@@ -65,7 +65,7 @@ app.layout = html.Div([
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),  
 
                 html.P([f"Population",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Size of population")]),
-                dcc.Input(id='population-input', type='number', value=100, min = 20, max=200, placeholder='Enter population', className='dcc.Input',
+                dcc.Input(id='population-input', type='number', value=1000, min = 20, placeholder='Enter population', className='dcc.Input',
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
                 html.P([f"Days",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Number of simulation days")]),
@@ -258,7 +258,7 @@ app.layout = html.Div([
         html.Div([
             # First Cytoscape Network
             html.H3("Visualizing Network progression", style={'margin-bottom': '15px', 'color': 'white'}),
-            html.P(id='animation-day', children='Current Day: {current_day}',
+            html.P(id='animation-day', children='Current Day: {currentDay}',
                    style={'margin-top': '15px', 'margin-bottom': '15px', 'color': 'white', 'font-size': '15px'}),
 
             cyto.Cytoscape(
@@ -296,10 +296,10 @@ app.layout = html.Div([
                 dcc.Graph(id='plotly-graph8', style={'height': '80vh', 'margin-bottom': '1vh'}),
                 dcc.Graph(id='plotly-graph9', style={'height': '80vh', 'margin-bottom': '1vh'}),
                 html.H3("Vaccination Impact and Contact Patterns Across Age Groups", style={'margin-bottom': '15px', 'color': 'white'}),
-                generate_vaccination_impact_contact_patterns_table(),
-                dbc.Alert(id='tbl_out'),
+                generateVaccinationImpactContactPatternsTable(),
+                dbc.Alert(id='vaccination-impact-table-out'),
                 html.H3("Age Group Contact Matrix", style={'margin-bottom': '15px', 'color': 'white'}),
-                generate_contact_matrix_table(),
+                generateContactMatrixTable(),
                 dbc.Alert(id='contact-matrix-table-out'),
                 dbc.Alert(
                     children=[
@@ -333,7 +333,7 @@ app.layout = html.Div([
                             target="_blank"  # Open the link in a new tab
                         ),
                     ],
-                    id='tbl_references',
+                    id='tblReferences',
                     color="info"
                 ),
                 # Modal (Popup window) content
@@ -422,7 +422,7 @@ app.layout = html.Div([
      Output('slider-input', 'max')],
     Input('day-input', 'value')
 )
-def update_slider_based_on_days(days):
+def updateSliderBasedOnDays(days):
     """
     Updates the Day Selection sliders' range and labels based on the number of simulation days.
 
@@ -472,7 +472,7 @@ def update_slider_based_on_days(days):
     Input('slider-input', 'value'),
     State('slider-1', 'max')
 )
-def update_slider_value(input_value, max_value):
+def updateSliderValue(inputValue, maxValue):
     """
     Updates the value of the day selection slider ('slider-1') based on the user's input in the day selection field ('slider-input').
 
@@ -480,26 +480,26 @@ def update_slider_value(input_value, max_value):
     which is defined by the slider's maximum value.
 
     Parameters:
-    - input_value (int): The day value entered by the user in the day selection field ('slider-input').
-    - max_value (int): The maximum allowable day value for the day selection slider ('slider-1').
+    - inputValue (int): The day value entered by the user in the day selection field ('slider-input').
+    - maxValue (int): The maximum allowable day value for the day selection slider ('slider-1').
 
     Returns:
     - int: The updated value for the day selection slider ('slider-1').
-        - If the input value is valid and within the range [1, max_value], it is returned.
+        - If the input value is valid and within the range [1, maxValue], it is returned.
         - If the input value is invalid, out of range, or missing, the slider value defaults to 1.
 
     Notes:
-    - The valid range for the slider is between 1 and `max_value`, inclusive.
-    - If `input_value` or `max_value` is None, or if an exception occurs (e.g., invalid type), the slider resets to 1.
+    - The valid range for the slider is between 1 and `maxValue`, inclusive.
+    - If `inputValue` or `maxValue` is None, or if an exception occurs (e.g., invalid type), the slider resets to 1.
 
     """
 
-    if input_value is None or max_value is None:
+    if inputValue is None or maxValue is None:
         return 1
     
     try:
-        value = int(input_value)
-        if 1 <= value <= max_value:
+        value = int(inputValue)
+        if 1 <= value <= maxValue:
             return value
         else:
             return 1 
@@ -511,14 +511,14 @@ def update_slider_value(input_value, max_value):
     Output('slider-input', 'value'),
     Input('slider-1', 'value')
 )
-def update_input(slider_value):
+def updateInput(sliderValue):
     """
     Updates the value of the day selection field ('slider-input') based on the value of the day selection slider ('slider-1').
 
     This callback ensures that the field reflects the current value selected by the user on the slider.
 
     Parameters:
-    - slider_value (int): The current value of the day selection slider ('slider-1').
+    - sliderValue (int): The current value of the day selection slider ('slider-1').
 
     Returns:
     - int: The updated value for the day selection field ('slider-input').
@@ -528,7 +528,7 @@ def update_input(slider_value):
     - The slider value is assumed to always be valid as it is constrained by the slider's range.
 
     """
-    return slider_value
+    return sliderValue
 
 
 
@@ -537,7 +537,7 @@ def update_input(slider_value):
      Output('node-input', 'max')],
     Input('population-input', 'value')
 )
-def update_slider_based_on_days(population):
+def updateSliderBasedOnDays(population):
     """
     Updates the minimum and maximum values for the node selection input field based on the population size.
 
@@ -579,14 +579,14 @@ def update_slider_based_on_days(population):
 
 
 
-def processNetwork(network, selected_node, checkbox):
+def processNetwork(network, selectedNode, checkbox):
     """
     Update the nodes and edges in the Cytoscape graph based on the given network,
     optionally filtering the elements based on user input.
 
     Parameters:
     - network: The network object containing nodes and their connections.
-    - selected_node: Node ID selected by the user (optional).
+    - selectedNode: Node ID selected by the user (optional).
     - checkbox: List of checkbox options selected by the user (e.g., 'removeOthers').
 
     Logic:
@@ -615,15 +615,15 @@ def processNetwork(network, selected_node, checkbox):
     nodes = network.getNodes()
 
     # Sort nodes by their integer IDs for consistent order
-    sorted_keys = sorted(nodes.keys(), key=lambda k: int(k))  # Convert string keys to integers
-    sorted_nodes_dict = {key: nodes[key] for key in sorted_keys}  # Create a sorted dictionary of nodes
+    sortedKeys = sorted(nodes.keys(), key=lambda k: int(k))  # Convert string keys to integers
+    sortedNodesDict = {key: nodes[key] for key in sortedKeys}  # Create a sorted dictionary of nodes
 
     # Loop through each node and generate its corresponding Cytoscape element
-    for node in sorted_nodes_dict.values():
+    for node in sortedNodesDict.values():
         # Get connections for the current node and sort them
         nodeConnections = node.getConnections()
         connections = sorted([str(nodeConnection) for nodeConnection in nodeConnections], key=int)
-        connections_str = ', '.join(connections)  # Create a comma-separated string of connections
+        connectionsStr = ', '.join(connections)  # Create a comma-separated string of connections
 
         # Generate the node element for Cytoscape
         # Node {'data': {'id': '190', 'label': 'Node 190', 'status': 'Susceptible', 'age': '52', 'S': '1', 'P': '0', 'A': '0', 'I': '0', 'R': '0', 'day': 1, 'connections': '1'}}
@@ -641,7 +641,7 @@ def processNetwork(network, selected_node, checkbox):
                 'I': str(round(node.I * 100, 1)) + '%',      # Infectious percentage
                 'R': str(round(node.R * 100, 1)) + '%',      # Recovered percentage
                 'day': node.day,                             # Simulation day
-                'connections': connections_str               # List of connections as a string
+                'connections': connectionsStr               # List of connections as a string
             }
         })
 
@@ -656,12 +656,12 @@ def processNetwork(network, selected_node, checkbox):
             })
 
     # If a node is selected, filter the elements based on the selected node and checkbox options
-    if selected_node is not None:
+    if selectedNode is not None:
         if 'removeOthers' in checkbox:  # If 'removeOthers' is checked
             # Get the connections of the selected node
-            nodeConnections = sorted_nodes_dict.get(str(selected_node)).getConnections()
+            nodeConnections = sortedNodesDict.get(str(selectedNode)).getConnections()
             connections = [str(nodeConnection) for nodeConnection in nodeConnections]
-            connections.append(str(selected_node))  # Include the selected node itself
+            connections.append(str(selectedNode))  # Include the selected node itself
 
             # Filter elements to show only the selected node and its connections
             elements = [
@@ -669,16 +669,16 @@ def processNetwork(network, selected_node, checkbox):
                 ('id' in element['data'] and  # Keep nodes that are in the selected node's network
                  element['data']['id'] in connections) or 
                 ('source' in element['data'] and  # Keep edges connected to the selected node
-                 (element['data']['source'] == str(selected_node) or 
-                  element['data']['target'] == str(selected_node)))
+                 (element['data']['source'] == str(selectedNode) or 
+                  element['data']['target'] == str(selectedNode)))
             ]
         else:  # If 'removeOthers' is not checked
             # Show all nodes but highlight edges connected to the selected node
             elements = [
                 element for element in elements if 
                 ('source' not in element['data'] or  # Keep all nodes
-                 (element['data']['source'] == str(selected_node) or  # Highlight edges of the selected node
-                  element['data']['target'] == str(selected_node)))
+                 (element['data']['source'] == str(selectedNode) or  # Highlight edges of the selected node
+                  element['data']['target'] == str(selectedNode)))
             ]
 
     # Return the updated list of elements for Cytoscape
@@ -715,15 +715,15 @@ def processNetwork(network, selected_node, checkbox):
      State('connection-radio', 'value')
     ]
 )
-def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, age1, age2, age3, age4, age5, age6, age7, age8, seed, reproNum, population, days, affected, interventionDay, vacPercent, radio):
+def generateAndUpdateNetwork(n_clicks, selectedNode, sliderValue, checkbox, age1, age2, age3, age4, age5, age6, age7, age8, seed, reproNum, population, days, affected, interventionDay, vacPercent, radio):
     """
     Callback function that generates and updates a contact network based on user input. 
     It processes the user inputs, validates them, runs an external simulation, and updates the network visualization accordingly.
 
     Parameters:
         n_clicks (int): Number of times the "Generate" button has been clicked.
-        selected_node (str): Node selected in the Cytoscape network.
-        slider_value (int): Value from the slider to determine the day of the network to display.
+        selectedNode (str): Node selected in the Cytoscape network.
+        sliderValue (int): Value from the slider to determine the day of the network to display.
         checkbox (list): List of selected checkboxes indicating which parameters are enabled (e.g., age, vaccination, isolation).
         age1, age2, age3, age4, age5, age6, age7, age8 (float): Percentage composition of different age groups in the population.
         seed (int): Seed for the random number generator.
@@ -744,7 +744,7 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
             - prevVer (list): Version details of the previous simulation.
             - currVer (list): Version details of the current simulation.
     """
-    global dailyNetwork, infectionGraph, populationPie, stackBarPlot, infectionRatePlot, degreeVsInfectionPlot, truePositiveRatePlot, current_day, overallInfectionRate, dayInfectionRateList, avgDailyConnectionsList, prevVer, currVer
+    global dailyNetwork, infectionGraph, populationPie, stackBarPlot, infectionRatePlot, degreeVsInfectionPlot, truePositiveRatePlot, currentDay, overallInfectionRate, dayInfectionRateList, avgDailyConnectionsList, prevVer, currVer
 
     # Handle "Generate" button click
     if n_clicks > 0:
@@ -768,7 +768,7 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
 
         try:
             # Reset and rename files for storing status
-            reset_file()
+            resetFile()
             renameFile()
             # Read the current version status from the file
             with open(statusPath, 'r') as file:
@@ -782,24 +782,24 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
             if 'vaccination' in checkbox:
                 currVer.append(f'Intervention Day: {interventionDay}, Vaccination Rate: {vacPercent}')
             if 'age' in checkbox:
-                age_group_details = 'Composition of age group:'
+                ageGroupDetails = 'Composition of age group:'
                 if age1 != 0:
-                    age_group_details += f' (0-9): {age1}%,'
+                    ageGroupDetails += f' (0-9): {age1}%,'
                 if age2 != 0:
-                    age_group_details += f' (10-19): {age2}%,'
+                    ageGroupDetails += f' (10-19): {age2}%,'
                 if age3 != 0:
-                    age_group_details += f' (20-29): {age3}%,'
+                    ageGroupDetails += f' (20-29): {age3}%,'
                 if age4 != 0:
-                    age_group_details += f' (30-39): {age4}%,'
+                    ageGroupDetails += f' (30-39): {age4}%,'
                 if age5 != 0:
-                    age_group_details += f' (40-49): {age5}%,'
+                    ageGroupDetails += f' (40-49): {age5}%,'
                 if age6 != 0:
-                    age_group_details += f' (50-59): {age6}%,'
+                    ageGroupDetails += f' (50-59): {age6}%,'
                 if age7 != 0:
-                    age_group_details += f' (60-69): {age7}%,'
+                    ageGroupDetails += f' (60-69): {age7}%,'
                 if age8 != 0:
-                    age_group_details += f' (>70): {age8}%,'
-                currVer.append(age_group_details[:-1])  # Remove trailing comma
+                    ageGroupDetails += f' (>70): {age8}%,'
+                currVer.append(ageGroupDetails[:-1])  # Remove trailing comma
             status['currVer'] = currVer
             currVer = [html.P(f"{line}", style={'word-wrap': 'break-word','color':'black'}) for line in currVer]
             prevVer = [html.P(f"{line}", style={'word-wrap': 'break-word','color':'black'}) for line in status['prevVer']]
@@ -817,25 +817,25 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
                 text=True,
                 check=True
             )
-            output_data = json.loads(result.stdout.strip())
+            outputData = json.loads(result.stdout.strip())
             
             # Update global variables with output from the external program
-            encoded_network = output_data.get('dailyNetwork')
-            infectionGraph = pio.from_json(output_data.get('infectionGraph'))
-            populationPie = pio.from_json(output_data.get('populationPie'))
-            stackBarPlot = pio.from_json(output_data.get('stackBarPlot'))
-            infectionRatePlot = pio.from_json(output_data.get('infectionRatePlot'))
-            degreeVsInfectionPlot = pio.from_json(output_data.get('degreeVsInfectionPlot')) 
-            truePositiveRatePlot = pio.from_json(output_data.get('truePositiveRatePlot'))
-            overallInfectionRate = output_data.get('overallInfectionRate')
-            dayInfectionRateList = output_data.get('dayInfectionRateList')
-            avgDailyConnectionsList = list(map(float, output_data.get('avgDailyConnectionsList')))
+            encodedNetwork = outputData.get('dailyNetwork')
+            infectionGraph = pio.from_json(outputData.get('infectionGraph'))
+            populationPie = pio.from_json(outputData.get('populationPie'))
+            stackBarPlot = pio.from_json(outputData.get('stackBarPlot'))
+            infectionRatePlot = pio.from_json(outputData.get('infectionRatePlot'))
+            degreeVsInfectionPlot = pio.from_json(outputData.get('degreeVsInfectionPlot')) 
+            truePositiveRatePlot = pio.from_json(outputData.get('truePositiveRatePlot'))
+            overallInfectionRate = outputData.get('overallInfectionRate')
+            dayInfectionRateList = outputData.get('dayInfectionRateList')
+            avgDailyConnectionsList = list(map(float, outputData.get('avgDailyConnectionsList')))
             
-            dailyNetwork = jsonpickle.decode(encoded_network)
+            dailyNetwork = jsonpickle.decode(encodedNetwork)
             network = dailyNetwork.getNetworkByDay('1')  # Access Day 1's network
-            current_day = 1
+            currentDay = 1
             # Process network for Cytoscape elements
-            elements = processNetwork(network, selected_node, checkbox)
+            elements = processNetwork(network, selectedNode, checkbox)
 
         except subprocess.CalledProcessError as e:
             return [], 0, True, f"Error in external program: {e.stderr}", prevVer, currVer
@@ -844,10 +844,10 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
 
     # Handle slider adjustment (for already generated networks)
     elif dailyNetwork is not None:
-        network = dailyNetwork.getNetworkByDay(str(slider_value))
+        network = dailyNetwork.getNetworkByDay(str(sliderValue))
         if network is None:
             return [], 0, True, "Generate Network to Start", prevVer, currVer
-        elements = processNetwork(network, selected_node, checkbox)
+        elements = processNetwork(network, selectedNode, checkbox)
 
     else:
         elements = []  # Default to an empty list if no conditions are met
@@ -856,17 +856,17 @@ def generateAndUpdateNetwork(n_clicks, selected_node, slider_value, checkbox, ag
     return elements, 0, False, '', prevVer, currVer
 
 
-def splitConnections(connections_str, items_per_line=8):
+def splitConnections(connectionsStr, itemsPerLine=8):
     """
     Splits a comma-separated connections string into multiple lines, 
     with a specified number of items per line.
 
     Parameters:
-        connections_str (str): A comma-separated string of connections (e.g., '1, 2, 3, 4, 5, ...').
-        items_per_line (int, optional): The number of items to display per line. Defaults to 8.
+        connectionsStr (str): A comma-separated string of connections (e.g., '1, 2, 3, 4, 5, ...').
+        itemsPerLine (int, optional): The number of items to display per line. Defaults to 8.
 
     Returns:
-        list: A list of strings, each representing a line of connections with up to `items_per_line` items.
+        list: A list of strings, each representing a line of connections with up to `itemsPerLine` items.
     
     Example:
         splitConnections('1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11', 4)
@@ -878,15 +878,15 @@ def splitConnections(connections_str, items_per_line=8):
         ]
     """
     # Split the connections string into a list of individual items based on the comma separator
-    connections_list = connections_str.split(', ')
+    connectionsList = connectionsStr.split(', ')
     
     # Initialize an empty list to store the lines of connections
     lines = []
     
-    # Create lines by slicing the list of connections into chunks of size `items_per_line`
-    for i in range(0, len(connections_list), items_per_line):
+    # Create lines by slicing the list of connections into chunks of size `itemsPerLine`
+    for i in range(0, len(connectionsList), itemsPerLine):
         # Join the items in the current slice with a comma and space, and add it to the lines list
-        line = ', '.join(connections_list[i:i + items_per_line])
+        line = ', '.join(connectionsList[i:i + itemsPerLine])
         lines.append(line)
     
     # Return the list of formatted lines
@@ -924,13 +924,13 @@ def displayClickData(data, elements):
 
     if data:
         # Extract the connections string from the clicked node's data
-        connections_str = data['connections']
+        connectionsStr = data['connections']
         
         # Split the connections string into multiple lines for better readability
-        connection_lines = splitConnections(connections_str)
+        connectionLines = splitConnections(connectionsStr)
         
         # Convert the connections string into a list of connected node IDs
-        connectionsList = connections_str.split(', ')
+        connectionsList = connectionsStr.split(', ')
         
         if elements:
             # Initialize an empty list to store ages of connected nodes
@@ -973,7 +973,7 @@ def displayClickData(data, elements):
                         f"Probabilty to Recovered State: {data['R']}"]),
                 # Display connections in multiple lines for readability
                 *[html.P(f"Connections: {line}", style={'word-wrap': 'break-word'}) if i == 0 else html.P(f"{line}", style={'word-wrap': 'break-word'}) 
-                for i, line in enumerate(connection_lines)]
+                for i, line in enumerate(connectionLines)]
             ], style={'max-width': '100vh', 'font-size': '14px', 'margin-bottom': '15px'}), indiAgeFreqPlot 
 
     # Return default message if no node is clicked or no data is available
@@ -990,7 +990,7 @@ def displayClickData(data, elements):
     [State('slider-input', 'value'),
      State('day-input', 'value')]   # State: current value of the slider (Day)
 )
-def display_nodes_status(elements, day, totalDays):
+def displayNodesStatus(elements, day, totalDays):
     """
     Callback function to display the status of nodes in the network based on their 
     current state (Susceptible, Presymptomatic, Asymptomatic, Infectious, or Recovered) 
@@ -1070,11 +1070,11 @@ def display_nodes_status(elements, day, totalDays):
         avgConnections = avgDailyConnectionsList[day-1]      # Calculate average number of connections
         overallConnections = round(sum(avgDailyConnectionsList)/totalDays,2)
         # Split the connections into manageable lines
-        sList_lines = splitConnections(', '.join(sList))
-        pList_lines = splitConnections(', '.join(pList))
-        aList_lines = splitConnections(', '.join(aList))
-        iList_lines = splitConnections(', '.join(iList))
-        rList_lines = splitConnections(', '.join(rList))
+        sListLines = splitConnections(', '.join(sList))
+        pListLines = splitConnections(', '.join(pList))
+        aListLines = splitConnections(', '.join(aList))
+        iListLines = splitConnections(', '.join(iList))
+        rListLines = splitConnections(', '.join(rList))
 
         # Build the HTML output to display status data
         return html.Div([
@@ -1094,19 +1094,19 @@ def display_nodes_status(elements, day, totalDays):
                 f"Unvaccinated: {unVaccinatedCount}"]),    
             html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Susceptible'), "margin-right": "5px"}),
                 f"Status: Susceptible"]), 
-            *[html.P(f"Nodes: {line}") if i == 0 else html.P(f"{line}") for i, line in enumerate(sList_lines)],
+            *[html.P(f"Nodes: {line}") if i == 0 else html.P(f"{line}") for i, line in enumerate(sListLines)],
             html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Presymptomatic'), "margin-right": "5px"}),
                 f"Status: Presymptomatic"]),
-            *[html.P(f"Nodes: {line}") if i == 0 else html.P(f"{line}") for i, line in enumerate(pList_lines)],
+            *[html.P(f"Nodes: {line}") if i == 0 else html.P(f"{line}") for i, line in enumerate(pListLines)],
             html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Asymptomatic'), "margin-right": "5px"}),
                 f"Status: Asymptomatic"]),
-            *[html.P(f"Nodes: {line}") if i == 0 else html.P(f"{line}") for i, line in enumerate(aList_lines)],
+            *[html.P(f"Nodes: {line}") if i == 0 else html.P(f"{line}") for i, line in enumerate(aListLines)],
             html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Infectious'), "margin-right": "5px"}),
                 f"Status: Infected"]),
-            *[html.P(f"Nodes: {line}") if i == 0 else html.P(f"{line}") for i, line in enumerate(iList_lines)],
+            *[html.P(f"Nodes: {line}") if i == 0 else html.P(f"{line}") for i, line in enumerate(iListLines)],
             html.P([html.I(className="bi bi-circle-fill pe-1", style={"color": statusColourMap.get('Recovered'), "margin-right": "5px"}),
                 f"Status: Recovered"]),
-            *[html.P(f"Nodes: {line}") if i == 0 else html.P(f"{line}") for i, line in enumerate(rList_lines)]
+            *[html.P(f"Nodes: {line}") if i == 0 else html.P(f"{line}") for i, line in enumerate(rListLines)]
         ])
 
     return "Generate network to see nodes status"  # Default message when no nodes are selected
@@ -1117,7 +1117,7 @@ def display_nodes_status(elements, day, totalDays):
     Output('cytoscape', 'stylesheet'),
     Input('cytoscape', 'elements')
 )
-def update_stylesheet(elements):
+def updateStylesheet(elements):
     """
     Callback function to update the stylesheet of a Cytoscape network based on the 
     'status' attribute of each node. The function assigns different colors to nodes 
@@ -1196,7 +1196,7 @@ def update_stylesheet(elements):
                Input('cytoscape', 'elements'),
                Input('checkbox-list', 'value'),
                Input('node-input', 'value')])
-def animate_network(n, elements, checkbox, selected_node):
+def animateNetwork(n, elements, checkbox, selectedNode):
     """
     Callback function to animate a network by updating its elements at regular intervals.
     The function retrieves the network for the current day from the `dailyNetwork` object 
@@ -1210,7 +1210,7 @@ def animate_network(n, elements, checkbox, selected_node):
                          updated each time the network is animated.
         checkbox (list): A list of selected checkbox values, used to filter or adjust the 
                          network elements.
-        selected_node (str): The ID of the selected node, which may influence how the 
+        selectedNode (str): The ID of the selected node, which may influence how the 
                              network elements are processed and displayed.
 
     Returns:
@@ -1218,28 +1218,28 @@ def animate_network(n, elements, checkbox, selected_node):
               the current day. If no network is available or if the daily network is not 
               generated, an error message is returned.
     """
-    global dailyNetwork, current_day
-    networkday = current_day
+    global dailyNetwork, currentDay
+    networkday = currentDay
     if dailyNetwork is None:
         return [{'data': {'id': 'Error', 'label': f"Generate Network to Start"}}], f"Current Day: {networkday}"
     else:
         # Retrieve the network for the current day
-        network = dailyNetwork.getNetworkByDay(str(current_day))
+        network = dailyNetwork.getNetworkByDay(str(currentDay))
         if network is None:
             return [{'data': {'id': 'Error', 'label': f"Generate Network to Start"}}], f"Current Day: {networkday}"
         # Process the network based on selected node and checkbox values
-        elements = processNetwork(network, selected_node, checkbox)
-        if current_day == len(dailyNetwork.networks):
-            current_day = 1 
+        elements = processNetwork(network, selectedNode, checkbox)
+        if currentDay == len(dailyNetwork.networks):
+            currentDay = 1 
         else:
-            current_day += 1
+            currentDay += 1
     return elements, f"Current Day: {networkday}"
 
 @app.callback(
     Output('animated-network', 'stylesheet'),
     Input('animated-network', 'elements')
 )
-def update_stylesheet2(elements):
+def updateStylesheet2(elements):
     """
     Callback function to update the stylesheet for the Cytoscape network based on the 
     status attribute of the nodes. The function applies different background colors 
@@ -1310,7 +1310,7 @@ def update_stylesheet2(elements):
     [Input('cytoscape', 'elements'),
      Input('slider-input', 'value')]
 )
-def update_graph(elements, slider_value):
+def updateGraph(elements, sliderValue):
     """
     Callback function to update the Plotly graph based on Cytoscape elements 
     and the selected slider value.
@@ -1323,7 +1323,7 @@ def update_graph(elements, slider_value):
     Parameters:
         elements (list): The elements of the Cytoscape graph, used for checking 
                          if the network has been generated.
-        slider_value (int): The value of the slider, which determines the position 
+        sliderValue (int): The value of the slider, which determines the position 
                             of the vertical line on the graph.
 
     Returns:
@@ -1344,9 +1344,9 @@ def update_graph(elements, slider_value):
         fig = go.Figure(infectionGraph)  # make a copy of figure, without affecting it
 
         # Add the vertical line at the specified day_value
-        if slider_value is not None:
+        if sliderValue is not None:
             fig.add_vline(
-                x=slider_value,  # Position of the vertical line
+                x=sliderValue,  # Position of the vertical line
                 line_width=3,
                 line_dash="dash",
                 line_color="red"
@@ -1361,7 +1361,7 @@ def update_graph(elements, slider_value):
     Output('plotly-graph2', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def update_graph(elements):
+def updateGraph(elements):
     """
     Callback function to update the infection rate graph based on changes to 
     the Cytoscape elements.
@@ -1395,7 +1395,7 @@ def update_graph(elements):
     Output('plotly-graph3', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def update_graph(elements):
+def updateGraph(elements):
     """
     Callback function to update the population pie chart based on changes to 
     the Cytoscape elements.
@@ -1429,7 +1429,7 @@ def update_graph(elements):
     Output('plotly-graph4', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def update_graph(elements):
+def updateGraph(elements):
     """
     Callback function to update the stacked bar chart based on changes to 
     the Cytoscape elements.
@@ -1463,7 +1463,7 @@ def update_graph(elements):
     Output('plotly-graph5', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def update_graph(elements):
+def updateGraph(elements):
     """
     Callback function to update the count plot based on changes to 
     the Cytoscape elements.
@@ -1498,7 +1498,7 @@ def update_graph(elements):
     Output('plotly-graph7', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def update_graph(elements):
+def updateGraph(elements):
     """
     Callback function to update the distribution subplot based on changes to 
     the Cytoscape elements.
@@ -1528,7 +1528,7 @@ def update_graph(elements):
     Output('plotly-graph8', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def update_graph(elements):
+def updateGraph(elements):
     """
     Callback function to update the degreeVsInfection Plot based on changes to 
     the Cytoscape elements.
@@ -1563,7 +1563,7 @@ def update_graph(elements):
     Output('plotly-graph9', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def update_graph(elements):
+def updateGraph(elements):
     """
     Callback function to update the True Positive rate Plot based on changes to 
     the Cytoscape elements.
@@ -1605,7 +1605,7 @@ def update_graph(elements):
      Output('popup-prevGraph5', 'figure')],
     [Input('cytoscape', 'elements')]
 )
-def update_graph(elements):
+def updateGraph(elements):
     """
     Callback function to update multiple popup graphs based on the Cytoscape 
     elements. It reads JSON plot data from predefined paths and returns the 
@@ -1685,7 +1685,7 @@ def update_graph(elements):
     Output('cytoscape', 'layout'),
     [Input('reset-button', 'n_clicks')]
 )
-def reset_view(n_clicks):
+def resetView(n_clicks):
     """
     Callback function to reset the layout of the Cytoscape graph when the 
     reset button is clicked.
@@ -1717,7 +1717,7 @@ def reset_view(n_clicks):
     [Output("progress", "value"), Output("progress", "label"), Output("progress", "color")],
     [Input("progress-interval", "n_intervals")],
 )
-def update_progress(n):
+def updateProgress(n):
     """
     Callback function to update the progress bar on the Dash app.
 
@@ -1756,7 +1756,7 @@ def update_progress(n):
     return progress, f"{progress} %" if progress >= 5 else "", color
 
 
-def reset_file():
+def resetFile():
     """
     Resets the progress value in the status file to 0.
 
@@ -1831,7 +1831,7 @@ def renameFile():
     [Input('dropdown-1', 'value'),
      Input('slider-2', 'value')]
 )
-def update_output(country, year):
+def updateOutput(country, year):
     """
     Update the age distribution values based on the selected country and year.
 
@@ -1868,7 +1868,7 @@ def update_output(country, year):
      Input('input-age-7', 'value'),
      Input('input-age-8', 'value')],
 )
-def validate_inputs(age1, age2, age3, age4, age5, age6, age7, age8):
+def validateInputs(age1, age2, age3, age4, age5, age6, age7, age8):
     """
     Validate the sum of the age group proportions and provide feedback.
 
@@ -1917,15 +1917,15 @@ def validate_inputs(age1, age2, age3, age4, age5, age6, age7, age8):
 
 
 @app.callback(
-    Output('tbl_out', 'children'),
-    [Input('tbl', 'active_cell'),
-     Input('tbl', 'data')]  # Add input for table data
+    Output('vaccination-impact-table-out', 'children'),
+    [Input('vaccination-impact-table', 'active_cell'),
+     Input('vaccination-impact-table', 'data')]  # Add input for table data
 )
-def update_table1(active_cell, table_data):
+def updateTable1(active_cell, tableData):
     """
     Update the output based on the active cell selection in the table.
 
-    This callback listens for changes in the active cell selection within the table (`tbl`)
+    This callback listens for changes in the active cell selection within the table (`vaccination-impact-table`)
     and updates the output based on the selected cell. The output displays the value from 
     the selected cell, along with additional information such as the corresponding age group.
     If the selected column is related to infection rate reduction, it modifies the column
@@ -1935,7 +1935,7 @@ def update_table1(active_cell, table_data):
     Args:
         active_cell (dict): Information about the currently active cell in the table, 
                              including row, column, and column_id.
-        table_data (list): The data in the table, structured as a list of dictionaries 
+        tableData (list): The data in the table, structured as a list of dictionaries 
                            where each dictionary represents a row.
 
     Returns:
@@ -1948,9 +1948,9 @@ def update_table1(active_cell, table_data):
         column_id = active_cell['column_id']
         
         # Retrieve the value from the table data using the row and column id
-        value = table_data[row][column_id]
+        value = tableData[row][column_id]
         if column_id != 'Age Group':
-            ageGroupVal = table_data[row]['Age Group']
+            ageGroupVal = tableData[row]['Age Group']
             if column_id == '1-14 days after first dose (95% CI)' or column_id == '15-28 days after first dose (95% CI)':
                 column_id = 'Infection Rate Reduction ' + column_id
             return f'Age Group: {ageGroupVal}, {column_id}: {value}'
@@ -1964,7 +1964,7 @@ def update_table1(active_cell, table_data):
     [Input('contact-matrix-table', 'active_cell'),
      Input('contact-matrix-table', 'data')]  # Add input for table data
 )
-def update_table2(active_cell, table_data):
+def updateTable2(active_cell, tableData):
     """
     Update the output with information about the selected cell in the contact matrix table.
 
@@ -1974,7 +1974,7 @@ def update_table2(active_cell, table_data):
 
     Args:
         active_cell (dict): A dictionary containing the row and column indices of the currently selected cell in the table.
-        table_data (list): A list of dictionaries representing the data of the table, where each dictionary corresponds to a row.
+        tableData (list): A list of dictionaries representing the data of the table, where each dictionary corresponds to a row.
 
     Returns:
         str: A string displaying the contact weight of connection between the two age groups (row and column), or a default message 
@@ -1985,9 +1985,9 @@ def update_table2(active_cell, table_data):
 
         row = active_cell['row']
         column_id = active_cell['column_id']
-        row_id = table_data[row]['Age Group']
+        row_id = tableData[row]['Age Group']
         # Retrieve the value from the table data using the row and column id
-        value = table_data[row][column_id]
+        value = tableData[row][column_id]
         return f'Contact weight of connection from {row_id} to {column_id} : {value}'
     return "Click the table"
 
@@ -2033,5 +2033,5 @@ def toggle_modal(open_clicks, close_clicks, current_style):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
     #print("url: http://localhost:8080/")

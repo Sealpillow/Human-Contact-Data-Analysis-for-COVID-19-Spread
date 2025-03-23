@@ -13,7 +13,7 @@ class Node:
         addConnection(connection):
             Adds a new connection to the node's list of connections.
 
-        getConnection(node_to):
+        getConnection(nodeTo):
             Retrieves a specific connection by the connected node's identifier.
 
         getConnections():
@@ -60,8 +60,8 @@ class Node:
         # Create a new edge and add it to the list of edges
         self.connections.append(connection) # the keys are the NodeTo name so that they are distinct keys
 
-    def getConnection(self, node_to):
-        return self.connections.get(node_to)
+    def getConnection(self, nodeTo):
+        return self.connections.get(nodeTo)
     
     def getConnections(self):
         return self.connections

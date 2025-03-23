@@ -46,8 +46,8 @@ def getData(name, days):
         - After processing all rows, the function returns the populated `DailyNetworks` object with nodes and connections 
           for each day.
     """
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(current_dir, "./data/{}".format(name))
+    currentDir = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(currentDir, "./data/{}".format(name))
 
     # ...populate network...
     dailyNetworks = DailyNetworks()
@@ -128,7 +128,7 @@ def getAgeGroupConnections(age):
 
 
 
-def update_network(day):   # Check the current day network if any one is in infected state-> isolate -> remove the person's connections
+def updateNetwork(day):   # Check the current day network if any one is in infected state-> isolate -> remove the person's connections
     """
     Updates the network for the given day by isolating individuals in the 'infected' state.
 
@@ -200,17 +200,17 @@ def Beta(day, person):
     meanA = 20.0  # State A: Asymptomatic carrier
     meanP = 1.43  # State P: Presymptomatic carrier
     meanI = 8.8   # State I: Symptomatic and infectious
-    sigma_P = 0.66  # Standard deviation of virus duration in state P
+    sigmaP = 0.66  # Standard deviation of virus duration in state P
 
     # Retrieve the network for the current day
     currNetwork = dailyNetwork.getNetworkByDay(day)
 
     # Calculate the average number of neighbors in the network
-    avgNumNeighNet_k = currNetwork.totalConnections / population
+    avgNumNeighNetK = currNetwork.totalConnections / population
 
     # Average time a susceptible individual is exposed to the virus
     # Includes contributions from asymptomatic (meanA), presymptomatic (meanP), and symptomatic (meanI) states
-    avgtimesusceptible_lambda = p * meanA + (1 - p) * (math.exp(meanP + (sigma_P**2) / 2) + meanI)
+    avgtimesusceptibleLambda = p * meanA + (1 - p) * (math.exp(meanP + (sigmaP**2) / 2) + meanI)
     
     # Adjust the reproduction number based on vaccination status
     # Reference: https://www.sciencedirect.com/science/article/pii/S0140673621004487?pes=vor&utm_source=tfo&getft_integrator=tfo
@@ -223,7 +223,7 @@ def Beta(day, person):
             reproNum *= (1 - 0.75)   
 
     # Calculate the transmission rate (beta)
-    beta = reproNum / (avgtimesusceptible_lambda * avgNumNeighNet_k)
+    beta = reproNum / (avgtimesusceptibleLambda * avgNumNeighNetK)
     return beta
 
 def F(t, j, beta):
@@ -320,7 +320,7 @@ def sumProb(personID, day, state):
     return prob
 
 # Update probabilities for the next day
-def update_probabilities(day):
+def updateProbabilities(day):
     """
     Updates the probabilities for all individuals in the network for the next day based on 
     their current state (S, P, I, A, or R) and interactions with their connections.
@@ -391,7 +391,7 @@ def update_probabilities(day):
 
 
 
-def update_status(day, rng):
+def updateStatus(day, rng):
     """
     Updates the status of each individual in the network for the next day based on their current state (S, P, I, A, R).
     The function also handles the process of vaccination after a specific intervention day.
@@ -559,27 +559,27 @@ def simulate(seed, population, days, randomNumPeople):
             node.S = 1
 
     # Initialize lists to track the number of individuals in each state over time
-    susceptible_counts = []
-    presymptomatic_counts = []
-    asymptomatic_counts = []
-    infected_counts = []
-    recovered_counts = []
+    susceptibleCounts = []
+    presymptomaticCounts = []
+    asymptomaticCounts = []
+    infectedCounts = []
+    recoveredCounts = []
 
     # Run the simulation for each day
     for day in range(1, days+1):
         if day < days:  # Update probabilities until the last day
             if 'isolate' in checkbox:
-                update_network(day)  # Isolate infectious individuals
-            update_probabilities(day)  # Update infection probabilities
-            update_status(day, rng)  # Update individual statuses based on the probabilities
+                updateNetwork(day)  # Isolate infectious individuals
+            updateProbabilities(day)  # Update infection probabilities
+            updateStatus(day, rng)  # Update individual statuses based on the probabilities
 
         # Count the number of individuals in each state for the current day
         currentNodes = dailyNetwork.getNetworkByDay(day).getNodes()
-        susceptible_counts.append(sum(1 for person in currentNodes.values() if person.status == 'S'))
-        presymptomatic_counts.append(sum(1 for person in currentNodes.values() if person.status == 'P'))
-        asymptomatic_counts.append(sum(1 for person in currentNodes.values() if person.status == 'A'))
-        infected_counts.append(sum(1 for person in currentNodes.values() if person.status == 'I'))
-        recovered_counts.append(sum(1 for person in currentNodes.values() if person.status == 'R'))
+        susceptibleCounts.append(sum(1 for person in currentNodes.values() if person.status == 'S'))
+        presymptomaticCounts.append(sum(1 for person in currentNodes.values() if person.status == 'P'))
+        asymptomaticCounts.append(sum(1 for person in currentNodes.values() if person.status == 'A'))
+        infectedCounts.append(sum(1 for person in currentNodes.values() if person.status == 'I'))
+        recoveredCounts.append(sum(1 for person in currentNodes.values() if person.status == 'R'))
 
         # Update the simulation progress in a status file
         with open(statusPath, 'r') as file:
@@ -591,9 +591,9 @@ def simulate(seed, population, days, randomNumPeople):
 
     # Plot the results
     degreeVsInfectionPlot, truePositiveRatePlot = plotDegreeVsInfection(dailyNetwork, population, days)
-    infectionPlot = plotResult(days, susceptible_counts, presymptomatic_counts, asymptomatic_counts, infected_counts, recovered_counts)
-    infectionRatePlot, overallInfectionRate, dayInfectionRateList = plotInfectionRate(days, susceptible_counts)
-    stackBarPlot = plotStackBar(days, susceptible_counts, presymptomatic_counts, asymptomatic_counts, infected_counts, recovered_counts)
+    infectionPlot = plotResult(days, susceptibleCounts, presymptomaticCounts, asymptomaticCounts, infectedCounts, recoveredCounts)
+    infectionRatePlot, overallInfectionRate, dayInfectionRateList = plotInfectionRate(days, susceptibleCounts)
+    stackBarPlot = plotStackBar(days, susceptibleCounts, presymptomaticCounts, asymptomaticCounts, infectedCounts, recoveredCounts)
     avgDailyConnectionsList = dailyNetwork.getAvgDailyConnectionsList()
 
 
