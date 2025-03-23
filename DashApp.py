@@ -2030,7 +2030,7 @@ def toggle_modal(open_clicks, close_clicks, current_style):
         return {**current_style, 'display': 'none'}, 1, 0  # Reset close button, set open button to 1
 
     return current_style, 0, 0  # Default case when no button is clicked
-
+    
 
 if __name__ == '__main__':
     app.run_server(debug=False)
