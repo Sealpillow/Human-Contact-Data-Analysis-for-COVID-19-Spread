@@ -2033,5 +2033,5 @@ def toggle_modal(open_clicks, close_clicks, current_style):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
     #print("url: http://localhost:8080/")
