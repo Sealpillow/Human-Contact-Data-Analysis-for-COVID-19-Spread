@@ -24,7 +24,7 @@ def plotResult(days,susceptibleCounts,presymptomaticCounts,asymptomaticCounts,in
         recoveredCounts (list): Daily counts of individuals in the 'Recovered' state.
 
     Returns:
-        plotly.graphObjects.Figure: A Plotly figure displaying the multi-line plot for all states.
+        plotly.graph_objects.Figure: A Plotly figure displaying the multi-line plot for all states.
 
     Description:
         - Maps each health state to a unique color using `statusColourMap`.
@@ -237,7 +237,7 @@ def plotStackBar(days,susceptibleCounts,presymptomaticCounts,asymptomaticCounts,
         recoveredCounts (list): Daily counts of individuals in the 'Recovered' state.
 
     Returns:
-        plotly.graphObjects.Figure: A Plotly figure displaying a stacked bar plot for all infection states.
+        plotly.graph_objects.Figure: A Plotly figure displaying a stacked bar plot for all infection states.
 
     Description:
         - Creates a stacked bar chart where each bar represents the total count for a specific day.
@@ -298,7 +298,7 @@ def plotCountConnections(connections):
         connections (list): A list of integers representing the number of connections for each individual.
 
     Returns:
-        plotly.graphObjects.Figure: A Plotly figure displaying a count plot of the frequency distribution of connections.
+        plotly.graph_objects.Figure: A Plotly figure displaying a count plot of the frequency distribution of connections.
 
     Description:
         - Creates a bar chart where the x-axis represents the number of connections and the y-axis represents 
@@ -399,7 +399,7 @@ def plotDistributionSubPlot():
     different stages of infection: Presymptomatic, Infectious, and Asymptomatic.
 
     Returns:
-        plotly.graphObjects.Figure: A Plotly figure containing three subplots, each displaying a CDF 
+        plotly.graph_objects.Figure: A Plotly figure containing three subplots, each displaying a CDF 
         for a different stage of infection.
 
     Description:

@@ -65,7 +65,7 @@ app.layout = html.Div([
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),  
 
                 html.P([f"Population",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Size of population")]),
-                dcc.Input(id='population-input', type='number', value=1000, min = 20, placeholder='Enter population', className='dcc.Input',
+                dcc.Input(id='population-input', type='number', value=100, min = 20, max=200, placeholder='Enter population', className='dcc.Input',
                           style={'margin-bottom': '15px', 'width': '160px', 'height': '25px', 'font-size': '15px'}),
 
                 html.P([f"Days",html.I(className="bi bi-info-circle", style={"color": '#007BFF', "margin-left": "5px"},title="Number of simulation days")]),
@@ -1310,7 +1310,7 @@ def updateStylesheet2(elements):
     [Input('cytoscape', 'elements'),
      Input('slider-input', 'value')]
 )
-def updateGraph(elements, sliderValue):
+def updateGraph1(elements, sliderValue):
     """
     Callback function to update the Plotly graph based on Cytoscape elements 
     and the selected slider value.
@@ -1361,7 +1361,7 @@ def updateGraph(elements, sliderValue):
     Output('plotly-graph2', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def updateGraph(elements):
+def updateGraph2(elements):
     """
     Callback function to update the infection rate graph based on changes to 
     the Cytoscape elements.
@@ -1395,7 +1395,7 @@ def updateGraph(elements):
     Output('plotly-graph3', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def updateGraph(elements):
+def updateGraph3(elements):
     """
     Callback function to update the population pie chart based on changes to 
     the Cytoscape elements.
@@ -1429,7 +1429,7 @@ def updateGraph(elements):
     Output('plotly-graph4', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def updateGraph(elements):
+def updateGraph4(elements):
     """
     Callback function to update the stacked bar chart based on changes to 
     the Cytoscape elements.
@@ -1463,7 +1463,7 @@ def updateGraph(elements):
     Output('plotly-graph5', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def updateGraph(elements):
+def updateGraph5(elements):
     """
     Callback function to update the count plot based on changes to 
     the Cytoscape elements.
@@ -1498,7 +1498,7 @@ def updateGraph(elements):
     Output('plotly-graph7', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def updateGraph(elements):
+def updateGraph7(elements):
     """
     Callback function to update the distribution subplot based on changes to 
     the Cytoscape elements.
@@ -1528,7 +1528,7 @@ def updateGraph(elements):
     Output('plotly-graph8', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def updateGraph(elements):
+def updateGraph8(elements):
     """
     Callback function to update the degreeVsInfection Plot based on changes to 
     the Cytoscape elements.
@@ -1563,7 +1563,7 @@ def updateGraph(elements):
     Output('plotly-graph9', 'figure'),
     [Input('cytoscape', 'elements')]
 )
-def updateGraph(elements):
+def updateGraph9(elements):
     """
     Callback function to update the True Positive rate Plot based on changes to 
     the Cytoscape elements.
@@ -1605,7 +1605,7 @@ def updateGraph(elements):
      Output('popup-prevGraph5', 'figure')],
     [Input('cytoscape', 'elements')]
 )
-def updateGraph(elements):
+def updateGraphAll(elements):
     """
     Callback function to update multiple popup graphs based on the Cytoscape 
     elements. It reads JSON plot data from predefined paths and returns the 
